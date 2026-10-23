@@ -1,16 +1,12 @@
 <?php
 
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
-| Web Routes
+| Panacea Restaurant preview
 |--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
+| A separate, read-only branded presentation. TastyIgniter's installed
+| routes remain untouched. Never intercept the storefront's '/' route.
 */
-
-//Route::get('/', function () {
-//    return view('welcome');
-//});
+Route::view('/panacea-preview', 'panacea.preview')->name('panacea.preview');
