@@ -38,7 +38,7 @@ Route::get('/panacea-preview', function () {
     try {
         $areas = \Igniter\Reservation\Models\DiningArea::with('available_tables')->get();
         foreach ($areas as $area) {
-            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan)];
+            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan), 'layout' => data_get($area->floor_plan, 'panacea_layout', [])];
             foreach ($area->getTablesForFloorPlan() as $table) {
                 $room['tables'][] = [
                     'id' => (int) $table['id'],
@@ -58,3 +58,29 @@ Route::get('/panacea-preview', function () {
 })->name('panacea.preview');
 
 Route::get('/panacea-operations', fn () => redirect('/admin'))->name('panacea.operations');
+
+
+// Local-only layout editor. Authenticated production endpoints will be separate.
+Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $request) {
+    abort_unless(app()->environment('local'), 404);
+    $validated = $request->validate([
+        'area_id' => ['required', 'integer', 'min:1'],
+        'positions' => ['required', 'array', 'max:100'],
+        'positions.*.id' => ['required', 'integer', 'min:1'],
+        'positions.*.x' => ['required', 'numeric', 'between:0,100'],
+        'positions.*.y' => ['required', 'numeric', 'between:0,100'],
+    ]);
+    $positions = collect($validated['positions']);
+    abort_if($positions->pluck('id')->unique()->count() !== $positions->count(), 422, 'Mesas duplicadas');
+    return DB::transaction(function () use ($validated, $positions) {
+        $area = \Igniter\Reservation\Models\DiningArea::query()->lockForUpdate()->findOrFail($validated['area_id']);
+        $allowed = $area->available_tables->pluck('id')->map(fn ($id) => (int) $id);
+        abort_if($positions->pluck('id')->diff($allowed)->isNotEmpty(), 422, 'Una mesa no pertenece al área');
+        $plan = $area->floor_plan ?? [];
+        abort_unless(is_array($plan), 422, 'Formato de plano no compatible');
+        $plan['panacea_layout'] = $positions->mapWithKeys(fn ($p) => [(string) $p['id'] => ['x' => round((float) $p['x'], 2), 'y' => round((float) $p['y'], 2)]])->all();
+        $area->floor_plan = $plan;
+        $area->save();
+        return response()->json(['ok' => true, 'layout' => $plan['panacea_layout']]);
+    });
+})->name('panacea.preview.floor-plan');
