@@ -32,7 +32,29 @@ Route::get('/panacea-preview', function () {
             $data[$table]['rows'] = $query->limit(30)->get();
         }
     }
-    return view('panacea.preview', ['panaceaData' => $data]);
+    // Read-only floor-plan snapshot from TastyIgniter's native reservation models.
+    // Occupancy is deliberately unknown until an authoritative service state is integrated.
+    $room = ['areas' => [], 'tables' => [], 'error' => null];
+    try {
+        $areas = \Igniter\Reservation\Models\DiningArea::with('available_tables')->get();
+        foreach ($areas as $area) {
+            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan)];
+            foreach ($area->getTablesForFloorPlan() as $table) {
+                $room['tables'][] = [
+                    'id' => (int) $table['id'],
+                    'area_id' => (int) $area->id,
+                    'name' => (string) $table['name'],
+                    'capacity' => (int) $table['capacity'],
+                    'description' => (string) $table['description'],
+                    'shape' => (string) $table['shape'],
+                ];
+            }
+        }
+    } catch (\Throwable $e) {
+        report($e);
+        $room['error'] = 'No se pudo cargar el plano real. Revisa los registros del servidor.';
+    }
+    return view('panacea.preview', ['panaceaData' => $data, 'panaceaRoom' => $room]);
 })->name('panacea.preview');
 
 Route::get('/panacea-operations', fn () => redirect('/admin'))->name('panacea.operations');
