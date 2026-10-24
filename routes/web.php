@@ -38,7 +38,7 @@ Route::get('/panacea-preview', function () {
     try {
         $areas = \Igniter\Reservation\Models\DiningArea::with('available_tables')->get();
         foreach ($areas as $area) {
-            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan), 'layout' => data_get($area->floor_plan, 'panacea_layout', [])];
+            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan)];
             foreach ($area->getTablesForFloorPlan() as $table) {
                 $room['tables'][] = [
                     'id' => (int) $table['id'],
@@ -47,6 +47,7 @@ Route::get('/panacea-preview', function () {
                     'capacity' => (int) $table['capacity'],
                     'description' => (string) $table['description'],
                     'shape' => (string) $table['shape'],
+                    'seatLayout' => $table['seatLayout'] ?? null,
                 ];
             }
         }
@@ -60,27 +61,34 @@ Route::get('/panacea-preview', function () {
 Route::get('/panacea-operations', fn () => redirect('/admin'))->name('panacea.operations');
 
 
-// Local-only layout editor. Authenticated production endpoints will be separate.
+// Development-only floor-plan editor; native TastyIgniter seat_layout format.
 Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $request) {
     abort_unless(app()->environment('local'), 404);
-    $validated = $request->validate([
-        'area_id' => ['required', 'integer', 'min:1'],
+    $input = $request->validate([
+        'area_id' => ['required', 'integer'],
         'positions' => ['required', 'array', 'max:100'],
-        'positions.*.id' => ['required', 'integer', 'min:1'],
-        'positions.*.x' => ['required', 'numeric', 'between:0,100'],
-        'positions.*.y' => ['required', 'numeric', 'between:0,100'],
+        'positions.*.id' => ['required', 'integer'],
+        'positions.*.x' => ['required', 'numeric', 'between:-10000,10000'],
+        'positions.*.y' => ['required', 'numeric', 'between:-10000,10000'],
+        'positions.*.rotation' => ['required', 'numeric', 'between:-360,360'],
     ]);
-    $positions = collect($validated['positions']);
+    $positions = collect($input['positions']);
     abort_if($positions->pluck('id')->unique()->count() !== $positions->count(), 422, 'Mesas duplicadas');
-    return DB::transaction(function () use ($validated, $positions) {
-        $area = \Igniter\Reservation\Models\DiningArea::query()->lockForUpdate()->findOrFail($validated['area_id']);
+    return DB::transaction(function () use ($input, $positions) {
+        $area = \Igniter\Reservation\Models\DiningArea::query()->lockForUpdate()->findOrFail($input['area_id']);
         $allowed = $area->available_tables->pluck('id')->map(fn ($id) => (int) $id);
-        abort_if($positions->pluck('id')->diff($allowed)->isNotEmpty(), 422, 'Una mesa no pertenece al área');
-        $plan = $area->floor_plan ?? [];
-        abort_unless(is_array($plan), 422, 'Formato de plano no compatible');
-        $plan['panacea_layout'] = $positions->mapWithKeys(fn ($p) => [(string) $p['id'] => ['x' => round((float) $p['x'], 2), 'y' => round((float) $p['y'], 2)]])->all();
-        $area->floor_plan = $plan;
-        $area->save();
-        return response()->json(['ok' => true, 'layout' => $plan['panacea_layout']]);
+        abort_if($positions->pluck('id')->diff($allowed)->isNotEmpty(), 422, 'Mesa ajena al área');
+        foreach ($positions as $position) {
+            $table = $area->dining_tables()->findOrFail($position['id']);
+            $layout = is_array($table->seat_layout) ? $table->seat_layout : [];
+            $table->seat_layout = array_merge($layout, [
+                'id' => 'group-'.$table->id,
+                'x' => (float) $position['x'],
+                'y' => (float) $position['y'],
+                'rotation' => (float) $position['rotation'],
+            ]);
+            $table->save();
+        }
+        return response()->json(['ok' => true]);
     });
 })->name('panacea.preview.floor-plan');
