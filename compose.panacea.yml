@@ -1,0 +1,29 @@
+name: panacea-restaurant
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    ports:
+      - "127.0.0.1:8088:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: panacea
+      MARIADB_USER: panacea
+      MARIADB_PASSWORD: panacea_local_dev
+      MARIADB_ROOT_PASSWORD: panacea_root_local_dev
+    volumes:
+      - panacea_db:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+volumes:
+  panacea_db:
