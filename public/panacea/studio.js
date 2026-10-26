@@ -126,7 +126,12 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
       real=await res.json();
       if(!demo)demo=demoSeed(real);else syncDemoFloor();
       $('banner').hidden=!!real.migrated;
-      $('banner').textContent=real.migrated?(real.extensions?.ready?'':'Para activar inventario, directorios y auditoría, ejecuta php artisan migrate.'):'Para activar reservas, comandas y caja debes ejecutar: php artisan migrate.';
+      $('banner').textContent=!real.migrated
+        ? 'Faltan las tablas operativas de Panacea. Ejecuta php artisan migrate.'
+        : real.extensions?.ready ? ''
+        : real.extensions?.reason==='query_error'
+          ? (real.extensions.error||'No se pudo consultar el módulo de gestión. Revisa los registros de Laravel.')
+          : 'Inventario, directorios y auditoría aún no están disponibles. Ejecuta php artisan migrate.';
       $('banner').hidden=!!real.migrated&&!!real.extensions?.ready;
       if(showNotice)notify('Datos actualizados desde MariaDB');
       render();
