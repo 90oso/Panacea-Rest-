@@ -74,12 +74,12 @@
     const first=tables[0],second=tables[1]||first,third=tables[2]||first,fourth=tables[3]||first;
     const soon=new Date(Date.now()+3*3600000),later=new Date(Date.now()+5*3600000);
     const reservations=[
-      {id:8101,dining_table_id:third.id,guest_name:'Reserva de ejemplo',party_size:Math.min(2,third.capacity),reserved_at:dbDate(soon),status:'confirmed'},
-      {id:8102,dining_table_id:fourth.id,guest_name:'Familia de ejemplo',party_size:Math.min(4,fourth.capacity),reserved_at:dbDate(later),status:'confirmed'}
+      {id:8101,dining_table_id:third.id,guest_name:'Reserva de ejemplo',party_size:Math.max(Number(third.min_capacity)||1,Math.min(2,third.capacity)),reserved_at:dbDate(soon),status:'confirmed'},
+      {id:8102,dining_table_id:fourth.id,guest_name:'Familia de ejemplo',party_size:Math.max(Number(fourth.min_capacity)||1,Math.min(4,fourth.capacity)),reserved_at:dbDate(later),status:'confirmed'}
     ];
     const sessions=[
-      {id:8201,dining_table_id:first.id,guest_name:'Visita de ejemplo',party_size:Math.min(2,first.capacity),status:'open',opened_at:dbDate(new Date(Date.now()-35*60000))},
-      {id:8202,dining_table_id:second.id,guest_name:'Grupo de ejemplo',party_size:Math.min(3,second.capacity),status:'open',opened_at:dbDate(new Date(Date.now()-55*60000))}
+      {id:8201,dining_table_id:first.id,guest_name:'Visita de ejemplo',party_size:Math.max(Number(first.min_capacity)||1,Math.min(2,first.capacity)),status:'open',opened_at:dbDate(new Date(Date.now()-35*60000))},
+      {id:8202,dining_table_id:second.id,guest_name:'Grupo de ejemplo',party_size:Math.max(Number(second.min_capacity)||1,Math.min(3,second.capacity)),status:'open',opened_at:dbDate(new Date(Date.now()-55*60000))}
     ];
     const m1=menu[0],m2=menu[1]||m1,m3=menu[2]||m1;
     const orders=[
@@ -355,6 +355,8 @@
       const t=data.tables.find(t=>t.id===Number(p.table_id));
       if(!t||p.party_size<t.min_capacity||p.party_size>t.capacity)throw Error('Capacidad de mesa no válida.');
       if(openSession(data,t.id))throw Error('Ya existe un servicio abierto.');
+      const near=data.reservations.find(r=>r.dining_table_id===t.id&&r.status==='confirmed'&&Math.abs(new Date(String(r.reserved_at).replace(' ','T')).getTime()-Date.now())<90*60000);
+      if(near&&Number(p.reservation_id)!==Number(near.id))throw Error('Hay una reserva próxima: recibe primero esa reserva.');
       if(p.reservation_id){const r=data.reservations.find(r=>r.id===Number(p.reservation_id));if(!r||r.status!=='confirmed'||r.dining_table_id!==t.id)throw Error('Reserva inválida.');r.status='seated';}
       data.sessions.push({id:uid(data.sessions),dining_table_id:t.id,reservation_id:p.reservation_id||null,guest_name:p.guest_name,party_size:Number(p.party_size),status:'open',opened_at:now});
     }
