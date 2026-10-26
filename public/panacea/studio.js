@@ -20,7 +20,7 @@
   const nextStep={pending:'preparing',preparing:'ready',ready:'served'};
   const nextLabel={pending:'Comenzar preparación',preparing:'Marcar listo',ready:'Marcar entregado'};
   let source='real',view='inicio',real=null,demo=null,selectedTable=null,selectedElement=null,editDraft=null,orderFilter='all',toastTimer=null,modalContext=null,loading=false,dragging=null;
-  const labels={inicio:'RESUMEN',reservas:'RESERVAS',salon:'SALÓN',pedidos:'PEDIDOS',cocina:'COCINA',caja:'CAJA',menu:'CATÁLOGO'};
+  const labels={inicio:'RESUMEN',reservas:'RESERVAS',salon:'SALÓN',pedidos:'PEDIDOS',cocina:'COCINA',caja:'CAJA',menu:'CATÁLOGO',inventario:'INVENTARIO',clientes:'CLIENTES',personal:'PERSONAL',incidencias:'INCIDENCIAS',simulador:'SIMULADOR',gerencia:'GERENCIA'};
   const demoMenu=[
     {id:90001,name:'Pizza artesanal',price:16.50},
     {id:90002,name:'Bowl mediterráneo',price:13.50},
@@ -91,7 +91,7 @@
       {id:8402,order_id:8301,menu_id:m2.id,title:m2.name,quantity:1,unit_price:m2.price},
       {id:8403,order_id:8302,menu_id:m3.id,title:m3.name,quantity:1,unit_price:m3.price}
     ];
-    return {mode:'demo',migrated:true,areas,tables,menus:menu,native_reservations:[],reservations,sessions,orders,lines,payments:[]};
+    return {mode:'demo',migrated:true,areas,tables,menus:menu,native_reservations:[],reservations,sessions,orders,lines,payments:[],source_counts:{stocks:7,customers:3,staffs:4,orders:orders.length,menus:menu.length},inventory:[{id:1,name:'Harina de trigo',qty:18,min:8,unit:'kg'},{id:2,name:'Mozzarella',qty:3,min:5,unit:'kg'},{id:3,name:'Tomate',qty:7,min:5,unit:'kg'},{id:4,name:'Aceite de oliva',qty:2,min:4,unit:'L'},{id:5,name:'Carne de res',qty:6,min:4,unit:'kg'}],customers:[{name:'María González',visits:14,preference:'Mesa junto a la ventana'},{name:'Carlos Pérez',visits:8,preference:'Sin preferencias registradas'},{name:'Familia Rodríguez',visits:19,preference:'Visita familiar'}],staff:[{name:'Andrea López',role:'Recepción',shift:'12:00 – 20:00'},{name:'Luis Moreno',role:'Mesero',shift:'11:00 – 19:00'},{name:'Sofía Ramos',role:'Cocina',shift:'12:00 – 22:00'},{name:'Mateo Díaz',role:'Caja',shift:'14:00 – 22:00'}],incidents:[{id:1,title:'Mozzarella por debajo del mínimo',severity:'Alta',resolved:false},{id:2,title:'Revisar limpieza de zona de paso',severity:'Media',resolved:false}]};
   }
   function syncDemoFloor(){
     if(!real||!demo)return;
@@ -158,6 +158,12 @@
     if(view==='cocina')renderKitchen();
     if(view==='caja')renderCash();
     if(view==='menu')renderCatalog();
+    if(view==='inventario')renderInventory();
+    if(view==='clientes')renderCustomers();
+    if(view==='personal')renderStaff();
+    if(view==='incidencias')renderIncidents();
+    if(view==='simulador')renderSimulator();
+    if(view==='gerencia')renderManagement();
   }
   function renderDashboard(){
     const data=current(),open=data.sessions.filter(s=>s.status==='open'),inKitchen=data.orders.filter(o=>o.status==='pending'||o.status==='preparing');
@@ -271,6 +277,54 @@
     const items=data.menus.filter(m=>String(m.name).toLowerCase().includes(term));
     $('menuCount').textContent=items.length+' productos';
     $('catalogGrid').innerHTML=items.length?items.map(m=>'<article class="catalog-card"><p class="overline">PRODUCTO #'+m.id+'</p><strong>'+esc(m.name)+'</strong><span class="small-note">Precio del catálogo '+(source==='real'?'TastyIgniter':'demostrativo')+'</span><span class="price">'+money(m.price)+'</span></article>').join(''):empty('El catálogo está vacío','No se encontraron productos. En modo real se utiliza exclusivamente el catálogo registrado en TastyIgniter.');
+  }
+
+
+  function renderInventory(){
+    const d=current(),items=source==='demo'?(d.inventory||[]):[];
+    const low=items.filter(x=>x.qty<x.min);
+    $('inventoryMetrics').innerHTML=metric('Registros de stock',source==='real'?(d.source_counts?.stocks??'—'):items.length,source==='real'?'Total nativo, sin cantidades verificadas':'Almacén ficticio')+
+      metric('Bajo mínimo',source==='real'?'—':low.length,source==='real'?'Requiere mapeo del modelo de stock':'Según mínimos del escenario')+
+      metric('Propuesta de compra',source==='real'?'Pendiente':low.length,'Solo demostración')+
+      metric('Descuento al vender','No activo','Pendiente de integración con recetas');
+    $('inventoryList').innerHTML=items.length?items.map(x=>'<div class="activity-row"><div><b>'+esc(x.name)+'</b><small>Umbral: '+x.min+' '+esc(x.unit)+'</small></div><div><strong>'+x.qty+' '+esc(x.unit)+'</strong><div>'+pill(x.qty<x.min?'Bajo mínimo':'Normal')+'</div></div></div>').join(''):empty('Inventario nativo identificado por recuento','No se muestran existencias ni costos sin verificar las columnas y reglas de la extensión de stock.');
+    $('inventoryNotes').innerHTML=source==='demo'?'<p class="inspector-desc">Las reposiciones de prueba modifican únicamente la memoria del navegador. No se descuentan insumos al crear comandas.</p><p class="small-note">Pendiente: recetas, mermas, movimientos auditables y compras.</p>':'<p class="inspector-desc">Hay '+esc(d.source_counts?.stocks??'—')+' registros de stock en el sistema nativo. Su contenido requiere mapeo antes de mostrar cifras o permitir movimientos reales.</p><p class="small-note">No se alteran las existencias de TastyIgniter.</p>';
+  }
+  function renderCustomers(){
+    const d=current(),people=source==='demo'?d.customers||[]:[];
+    $('customerMetrics').innerHTML=metric('Clientes registrados',source==='real'?(d.source_counts?.customers??'—'):people.length,source==='real'?'Conteo del sistema nativo':'Contactos ficticios')+
+      metric('Historial de visitas',source==='real'?'Sin integrar':people.reduce((n,p)=>n+p.visits,0),source==='real'?'Requiere consentimiento y relaciones verificadas':'Visitas ilustrativas')+
+      metric('Reservas Panacea',d.reservations.length,'Registros de la fuente seleccionada')+
+      metric('Fidelización','Pendiente','No hay puntos reales');
+    $('customerList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">CONTACTO FICTICIO</p><h3 style="margin-top:20px">'+esc(p.name)+'</h3><p class="card-meta">'+p.visits+' visitas ilustrativas</p><div class="card-footer"><span class="pill muted">'+esc(p.preference)+'</span></div></article>').join(''):empty('Directorio aún no integrado','El número de clientes se consulta cuando la tabla nativa existe. Los perfiles y preferencias no se exponen sin un modelo de permisos y consentimiento.');
+  }
+  function renderStaff(){
+    const d=current(),people=source==='demo'?d.staff||[]:[];
+    $('staffMetrics').innerHTML=metric('Registros de personal',source==='real'?(d.source_counts?.staffs??'—'):people.length,'Fuente seleccionada')+
+      metric('Roles y permisos',source==='real'?'TastyIgniter':'4 perfiles','Gestión central')+
+      metric('Turnos',source==='real'?'Sin integrar':'Ilustrativos','No modifica calendarios')+
+      metric('Registro de acciones','Pendiente','Auditoría por usuario');
+    $('staffList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">'+esc(p.role)+'</p><h3 style="margin-top:20px">'+esc(p.name)+'</h3><p class="card-meta">Horario · '+esc(p.shift)+'</p><div class="card-footer"><span class="pill muted">Turno demo</span></div></article>').join(''):empty('Personal gestionado desde administración','Los permisos, turnos y fichajes nativos necesitan autenticación y autorización antes de gestionarse desde Panacea.');
+  }
+  function renderIncidents(){
+    const items=source==='demo'?demo.incidents:[];
+    $('incidentList').innerHTML=items.length?items.map(i=>'<article class="reservation-card"><p class="overline">INCIDENCIA #'+i.id+'</p><h3 style="margin-top:20px">'+esc(i.title)+'</h3><p class="card-meta">Prioridad '+esc(i.severity)+'</p><div class="card-footer">'+pill(i.resolved?'Resuelta':'Abierta')+(i.resolved?'':'<button class="micro-btn accent" data-resolve-incident="'+i.id+'">Resolver</button>')+'</div></article>').join(''):empty(source==='real'?'Incidencias no habilitadas en datos reales':'No hay incidencias abiertas','Se requiere registro persistente, roles y auditoría para el uso operativo. La demostración se mantiene interactiva.');
+  }
+  function renderSimulator(){
+    const price=Number($('simPrice').value)||0,cost=Number($('simCost').value)||0,volume=Number($('simVolume').value)||0,discount=Math.max(0,Math.min(100,Number($('simDiscount').value)||0));
+    const sales=volume*price*(1-discount/100),variable=volume*cost;
+    $('simulationResults').innerHTML=metric('Ingreso diario',money(sales),'Con descuento')+metric('Costo variable',money(variable),'Por volumen')+metric('Contribución',money(sales-variable),'Antes de costos fijos')+metric('Margen',sales?((sales-variable)/sales*100).toFixed(1)+'%':'—','Simulación únicamente');
+  }
+  function renderManagement(){
+    const d=current(),closed=d.sessions.filter(s=>s.status==='closed'),orders=d.orders,payments=d.payments;
+    const paid=payments.reduce((sum,p)=>sum+Number(p.amount),0);
+    $('managementMetrics').innerHTML=metric('Comandas Panacea',orders.length,'No incluye pedidos nativos')+
+      metric('Abonos manuales',money(paid),'Sin validación bancaria')+
+      metric('Servicios cerrados',closed.length,'Ciclo completado')+
+      metric('Reservas Panacea',d.reservations.length,'Separadas de TastyIgniter');
+    $('managementOrders').innerHTML=['pending','preparing','ready','served'].map(status=>'<div class="activity-row"><div><b>'+esc(statusNames[status])+'</b><small>Comandas de la operación Panacea</small></div><strong>'+orders.filter(o=>o.status===status).length+'</strong></div>').join('');
+    const counts=d.source_counts||{};
+    $('managementSources').innerHTML=source==='real'?['orders','menus','stocks','customers','staffs'].map(name=>'<div class="activity-row"><div><b>'+esc(({orders:'Pedidos nativos',menus:'Productos',stocks:'Stock',customers:'Clientes',staffs:'Personal'}[name]))+'</b><small>Conteo de registros nativos, no sumado a Panacea</small></div><strong>'+esc(counts[name]??'—')+'</strong></div>').join(''):'<p class="inspector-desc">El modo demostración utiliza cantidades simuladas para ensayar operaciones. Cambia a Datos reales para consultar los recuentos de TastyIgniter.</p>';
   }
 
   async function post(type,payload){
@@ -487,8 +541,11 @@
       }
       if(cmd==='apply-arch')updateArchitecture();
       if(cmd==='delete-arch'){editDraft.areas[0].elements.splice(selectedElement,1);selectedElement=null;renderFloor();}
+      if(cmd==='restock-demo'){if(source!=='demo')return notify('Reponer existencias requiere integración con stock real.',true);demo.inventory.forEach(i=>{if(i.qty<i.min)i.qty=i.min*2});renderInventory();notify('Reposición simulada');}
+      if(cmd==='new-incident'){if(source!=='demo')return notify('El registro real requiere auditoría y permisos.',true);demo.incidents.unshift({id:Math.max(...demo.incidents.map(i=>i.id),0)+1,title:'Incidencia de ejemplo',severity:'Media',resolved:false});renderIncidents();notify('Incidencia simulada');}
       return;
     }
+    const resolved=e.target.closest('[data-resolve-incident]');if(resolved&&source==='demo'){const incident=demo.incidents.find(i=>i.id===Number(resolved.dataset.resolveIncident));if(incident)incident.resolved=true;renderIncidents();notify('Incidencia resuelta en demo');return;}
     const seatRes=e.target.closest('[data-seat-res]');
     if(seatRes){const r=current().reservations.find(r=>r.id===Number(seatRes.dataset.seatRes));if(r)seatModal(r.dining_table_id,r.id);return;}
     const cancelRes=e.target.closest('[data-cancel-res]');
@@ -511,6 +568,7 @@
     $('reservationDate').addEventListener('change',renderReservations);
     $('clearDate').addEventListener('click',()=>{$('reservationDate').value='';renderReservations();});
     $('menuSearch').addEventListener('input',renderCatalog);
+    ['simPrice','simCost','simVolume','simDiscount'].forEach(id=>$(id).addEventListener('input',renderSimulator));
     $('orderTabs').addEventListener('click',e=>{
       const button=e.target.closest('[data-order-filter]');if(!button)return;
       orderFilter=button.dataset.orderFilter;
