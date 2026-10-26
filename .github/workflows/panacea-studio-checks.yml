@@ -49,6 +49,8 @@ jobs:
         run: node tests/panacea-studio-shell-smoke.mjs
       - name: Regression for customer route, resilient reads and accessible contrast
         run: node tests/panacea-regression-guards.mjs
+      - name: Documentation links and traceability
+        run: node tests/panacea-docs-smoke.mjs
       - name: Required app files present
         run: |
           test -s resources/views/panacea/studio.blade.php
