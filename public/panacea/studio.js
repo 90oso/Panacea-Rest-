@@ -184,6 +184,28 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     if(view==='simulador')renderSimulator();
     if(view==='gerencia')renderManagement();
   }
+
+  function decisionSignals(data){
+    const ext=data.extensions||{},signals=[];
+    const pending=data.reservations.filter(r=>r.status==='pending');
+    if(pending.length)signals.push({level:'high',title:pending.length+' solicitud(es) de reserva pendientes',detail:'Hay solicitudes del portal o registros sin confirmar. Comprueba horarios y capacidad antes de asignar.',nav:'reservas'});
+    const waiting=data.orders.filter(o=>o.status==='pending'&&o.created_at&&Date.now()-new Date(String(o.created_at).replace(' ','T')).getTime()>20*60000);
+    if(waiting.length)signals.push({level:'high',title:waiting.length+' comanda(s) pendientes durante más de 20 minutos',detail:'Revisa la cola de cocina y sus tiempos antes de escalar.',nav:'cocina'});
+    const low=(ext.ingredients||[]).filter(i=>Number(i.stock)<Number(i.min_stock));
+    if(low.length)signals.push({level:'medium',title:low.length+' ingrediente(s) por debajo del umbral',detail:'Comprueba existencias y repón únicamente cantidades verificadas.',nav:'inventario'});
+    const incidents=(ext.incidents||[]).filter(i=>i.status==='open');
+    if(incidents.length)signals.push({level:'medium',title:incidents.length+' incidencia(s) abierta(s)',detail:'Asigna responsables y documenta la resolución.',nav:'incidencias'});
+    const uncosted=Number(ext.cost_totals?.uncosted_order_lines||0);
+    if(uncosted>0)signals.push({level:'medium',title:uncosted+' línea(s) de comanda sin receta',detail:'La contribución estimada es incompleta hasta cubrir ingredientes y costos.',nav:'inventario'});
+    const unpaid=data.sessions.filter(session=>session.status==='open'&&sessionBalance(data,session.id).due>0);
+    if(unpaid.length)signals.push({level:'info',title:unpaid.length+' servicio(s) con saldo pendiente',detail:'Revisa la caja antes de finalizar cada mesa; no implica que deban cobrarse de inmediato.',nav:'caja'});
+    if(source==='real'&&data.native_reservations?.length)signals.push({level:'info',title:'Reservas nativas detectadas',detail:'Los estados nativos no están conciliados todavía con Panacea. Revísalos antes de confirmar solapamientos.',nav:'reservas'});
+    if(!signals.length)signals.push({level:'ok',title:'Sin alertas con las reglas actuales',detail:'Esto no garantiza ausencia de incidencias ni disponibilidad real. Mantén las verificaciones del equipo.',nav:'salon'});
+    return signals.slice(0,6);
+  }
+  function signalMarkup(signals){
+    return signals.map((item,index)=>'<div class="signal-item signal-'+esc(item.level)+'" style="--signal-index:'+index+'"><div class="signal-orb" aria-hidden="true">'+(item.level==='high'?'!':item.level==='medium'?'◈':item.level==='info'?'↗':'✓')+'</div><div class="signal-body"><strong>'+esc(item.title)+'</strong><p>'+esc(item.detail)+'</p></div><button class="micro-btn" data-goto="'+esc(item.nav)+'">Revisar ↗</button></div>').join('');
+  }
   function renderDashboard(){
     const data=current(),open=data.sessions.filter(s=>s.status==='open'),inKitchen=data.orders.filter(o=>o.status==='pending'||o.status==='preparing');
     const future=data.reservations.filter(r=>r.status==='confirmed'&&new Date(String(r.reserved_at).replace(' ','T')).getTime()>=Date.now()-3600000);
@@ -195,6 +217,7 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     });
     data.reservations.slice().sort((a,b)=>b.id-a.id).slice(0,3).forEach(r=>events.push({title:'Reserva #'+r.id+' · '+tableName(data,r.dining_table_id),desc:fmtDate(r.reserved_at)+' · '+r.party_size+' personas',status:r.status}));
     $('activityFeed').innerHTML=events.length?events.map(e=>'<div class="activity-row"><div><b>'+esc(e.title)+'</b><small>'+esc(e.desc)+'</small></div>'+pill(e.status)+'</div>').join(''):empty('Sin actividad registrada','Aquí aparecerán las reservas y los pedidos cuando comience el servicio.','<button class="micro-btn accent" data-goto="reservas">Crear reserva ↗</button>');
+    $('insightList').innerHTML=signalMarkup(decisionSignals(data));
   }
   function pill(status){
     const cls={confirmed:'success',seated:'process',cancelled:'muted',pending:'warning',preparing:'process',ready:'success',served:'muted'}[status]||'muted';
@@ -323,6 +346,8 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     $('inventoryNotes').innerHTML='<p class="inspector-desc">Los movimientos están en el inventario de Panacea; no se modifica el stock nativo de TastyIgniter. Cuando una comanda pasa a preparación se descuenta su receta, una sola vez.</p>'+
       '<div class="surface-heading"><h2>Recetas vinculadas</h2><span class="pill muted">'+recipes.length+' ingredientes asociados</span></div>'+
       (recipes.length?recipes.map(r=>'<div class="activity-row"><div><b>'+esc(catalog.find(m=>Number(m.id)===Number(r.menu_id))?.name||'Producto #'+r.menu_id)+'</b><small>'+esc(items.find(x=>Number(x.id)===Number(r.ingredient_id))?.name||'Ingrediente')+'</small></div><strong>'+Number(r.quantity).toFixed(3)+' '+esc(items.find(x=>Number(x.id)===Number(r.ingredient_id))?.unit||'')+'</strong></div>').join(''):empty('Sin recetas','Asocia ingredientes con platos para conocer consumos y costos.'))+
+      '<div class="surface-heading audit-header"><div><p class="overline">MOVIMIENTOS</p><h2>Historial de inventario</h2></div></div>'+
+      ((e.movements||[]).length?e.movements.slice(0,8).map(m=>'<div class="activity-row"><div><b>'+esc(items.find(i=>i.id===Number(m.ingredient_id))?.name||'Ingrediente #'+m.ingredient_id)+'</b><small>'+esc(m.kind==='receive'?'Entrada':'Consumo de cocina')+' · '+esc(String(m.created_at||'').slice(0,16))+'</small></div><strong>'+(Number(m.quantity_delta)>0?'+':'')+Number(m.quantity_delta).toFixed(3)+'</strong></div>').join(''):empty('Sin movimientos','Las entradas y los consumos de recetas aparecerán aquí.'))+
       '<div class="integration-footnote">Registros del stock nativo: '+esc(d.source_counts?.stocks??'—')+' · Pendiente sincronización certificada con TastyIgniter.</div>';
   }
   function renderCustomers(){
@@ -370,6 +395,7 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
       '<div class="surface-heading audit-header"><div><p class="overline">TRAZABILIDAD</p><h2>Últimas acciones de Panacea</h2></div></div>'+
       (audits.length?audits.slice(0,6).map(a=>'<div class="activity-row"><div><b>'+esc(a.action)+'</b><small>'+esc(a.resource_type)+' · #'+esc(a.resource_id||'—')+'</small></div><span class="small-note">'+esc(String(a.occurred_at).slice(0,16))+'</span></div>').join(''):empty('Sin eventos de auditoría','Aparecerán aquí al realizar acciones operativas en Panacea.'))+
       '<div class="integration-footnote">Los datos de operación de Panacea y TastyIgniter siguen separados hasta su conciliación.</div>';
+    $('managementSignals').innerHTML=signalMarkup(decisionSignals(d));
   }
 
   async function post(type,payload){
