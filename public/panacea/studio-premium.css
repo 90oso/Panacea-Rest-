@@ -371,7 +371,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
 .kitchen-ticket{box-shadow:var(--shadow);border-radius:13px;background:var(--glass-solid)}
 .journey>div span{background:var(--tint);border:1px solid var(--line);color:var(--accent)}
 .status-tabs button.active{box-shadow:0 4px 15px #1f432a1e}
-.toast{background:linear-gradient(125deg,#24543d,#153c2f)!important;border:1px solid #ffffff44;backdrop-filter:blur(18px);border-radius:12px}
+.toast{background:linear-gradient(125deg,#24543d,#153c2f);border:1px solid #ffffff44;backdrop-filter:blur(18px);border-radius:12px}
 .modal-overlay{backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);background:#071c14a0}
 .modal{
   background:var(--glass-solid);border:1px solid var(--glass-edge);
