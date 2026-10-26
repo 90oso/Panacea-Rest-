@@ -22,7 +22,7 @@ const rows=lines.filter(Boolean).map(parseRow);
 const approved=new Set([
   'REGENERAR','REESCRIBIR','REEMPLAZAR','ADAPTAR','REDISENAR',
   'ACTUALIZAR_ARCHIVAR','DESCARTAR','REVISAR_ATRIBUCION',
-  'CONSERVAR_ADAPTAR','REFRACTORIZAR','ARCHIVAR'
+  'CONSERVAR_ADAPTAR','REFACTORIZAR','ARCHIVAR'
 ]);
 const listed=new Set();
 for (const r of rows) {
