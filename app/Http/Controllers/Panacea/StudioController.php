@@ -331,10 +331,17 @@ class StudioController extends Controller
                     'session_id' => ['required','integer'],
                     'amount' => ['required','numeric','gt:0','decimal:0,2','max:99999'],
                     'method' => ['required','in:cash,card,other'],
+                    'idempotency_key' => ['required','string','max:80','regex:/^[a-zA-Z0-9_-]{16,80}$/'],
                 ]);
                 $session = DB::table('panacea_service_sessions')->where('id', $p['session_id'])
                     ->lockForUpdate()->first();
                 abort_unless($session, 404);
+                $existing = DB::table('panacea_service_payments')
+                    ->where('idempotency_key', $p['idempotency_key'])->first();
+                if ($existing) {
+                    if ((int) $existing->session_id !== (int) $session->id) $this->fail('Clave de operación duplicada en otro servicio.');
+                    return response()->json(['ok' => true, 'replayed' => true]);
+                }
                 if ($session->status !== 'open') $this->fail('Servicio cerrado.');
                 $due = $this->outstanding((int) $session->id);
                 $cents = (int) round((float) $p['amount'] * 100);
@@ -342,7 +349,7 @@ class StudioController extends Controller
                 DB::table('panacea_service_payments')->insert([
                     'session_id' => $session->id,
                     'amount' => number_format($cents / 100, 2, '.', ''),
-                    'method' => $p['method'], 'recorded_at' => now(),
+                    'method' => $p['method'], 'idempotency_key' => $p['idempotency_key'], 'recorded_at' => now(),
                     'created_at' => now(), 'updated_at' => now(),
                 ]);
             } elseif ($type === 'close') {
