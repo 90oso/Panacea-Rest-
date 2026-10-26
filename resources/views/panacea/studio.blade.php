@@ -33,6 +33,13 @@
       <button type="button" data-nav="cocina"><span class="nav-symbol">◫</span>Cocina</button>
       <button type="button" data-nav="caja"><span class="nav-symbol">▣</span>Caja y cobros</button>
       <button type="button" data-nav="menu"><span class="nav-symbol">◩</span>Catálogo</button>
+      <div class="nav-separator">GESTIÓN</div>
+      <button type="button" data-nav="inventario"><span class="nav-symbol">◧</span>Inventario</button>
+      <button type="button" data-nav="clientes"><span class="nav-symbol">♙</span>Clientes</button>
+      <button type="button" data-nav="personal"><span class="nav-symbol">♧</span>Personal</button>
+      <button type="button" data-nav="incidencias"><span class="nav-symbol">⚑</span>Incidencias</button>
+      <button type="button" data-nav="simulador"><span class="nav-symbol">◇</span>Simulador</button>
+      <button type="button" data-nav="gerencia"><span class="nav-symbol">▥</span>Gerencia</button>
     </nav>
     <div class="side-bottom"><div class="side-status"><span class="pulse"></span><span>Entorno local de desarrollo</span></div><p>El modo real utiliza MariaDB. Los cobros se registran manualmente y no son transacciones bancarias ni comprobantes fiscales.</p><a href="/panacea-operations">Administración TastyIgniter <span>↗</span></a></div>
   </aside>
@@ -101,6 +108,27 @@
         <div class="section-intro"><div><p class="overline">CATÁLOGO</p><h1>Tu menú, bien presentado.</h1><p class="subhead">En datos reales los productos y precios se leen del catálogo de TastyIgniter.</p></div><button class="secondary-btn" data-goto="salon">Tomar pedido ↗</button></div>
         <div class="toolbar"><label class="search-wrapper">⌕ <input type="search" id="menuSearch" placeholder="Buscar en el catálogo..." aria-label="Buscar en el catálogo"></label><span id="menuCount" class="small-note"></span></div>
         <div class="catalog-grid" id="catalogGrid"></div>
+      </section>
+
+
+      <section class="view" data-view="inventario">
+        <div class="section-intro"><div><p class="overline">EXISTENCIAS Y COMPRAS</p><h1>Inventario sin sorpresas.</h1><p class="subhead">Consulta el alcance actual del inventario, distinguiendo el simulador del sistema nativo.</p></div><button class="secondary-btn" data-command="restock-demo">+ Registrar reposición en demo</button></div>
+        <div class="metrics" id="inventoryMetrics"></div><div class="dashboard-grid"><article class="surface"><div class="surface-heading"><div><p class="overline">ALMACÉN</p><h2>Existencias y mínimos</h2></div></div><div id="inventoryList"></div></article><article class="surface"><div class="surface-heading"><div><p class="overline">INTEGRACIÓN</p><h2>Conexión con la cocina</h2></div></div><div id="inventoryNotes"></div></article></div>
+      </section>
+      <section class="view" data-view="clientes">
+        <div class="section-intro"><div><p class="overline">RELACIONES</p><h1>Atención con memoria.</h1><p class="subhead">Seguimiento de visitas y preferencias con privacidad y consentimiento.</p></div></div><div class="metrics" id="customerMetrics"></div><div class="reservation-grid" id="customerList"></div>
+      </section>
+      <section class="view" data-view="personal">
+        <div class="section-intro"><div><p class="overline">EQUIPO DE SERVICIO</p><h1>Personas, roles y turnos.</h1><p class="subhead">La configuración del personal debe provenir del módulo de permisos y horarios autorizado.</p></div></div><div class="metrics" id="staffMetrics"></div><div class="reservation-grid" id="staffList"></div>
+      </section>
+      <section class="view" data-view="incidencias">
+        <div class="section-intro"><div><p class="overline">CONTROL OPERATIVO</p><h1>Que nada quede sin atender.</h1><p class="subhead">Registro y seguimiento de incidencias; el escenario demo permite probar resoluciones.</p></div><button class="secondary-btn" data-command="new-incident">+ Incidencia de ejemplo</button></div><div class="reservation-grid" id="incidentList"></div>
+      </section>
+      <section class="view" data-view="simulador">
+        <div class="section-intro"><div><p class="overline">ESCENARIOS</p><h1>Probar antes de decidir.</h1><p class="subhead">Simulación orientativa de ingresos y margen; los resultados no modifican ventas ni inventario.</p></div></div><div class="dashboard-grid"><article class="surface"><h2>Parámetros del escenario</h2><div class="simulator-fields"><label>Precio por pedido (USD)<input type="number" id="simPrice" min="0" step="0.5" value="18"></label><label>Costo variable por pedido (USD)<input type="number" id="simCost" min="0" step="0.5" value="8"></label><label>Pedidos estimados al día<input type="number" id="simVolume" min="0" step="1" value="65"></label><label>Descuento (%)<input type="number" id="simDiscount" min="0" max="100" step="1" value="5"></label></div></article><article class="surface"><p class="overline">SIMULACIÓN</p><h2>Resultados proyectados</h2><div class="metrics simulator-results" id="simulationResults"></div><p class="small-note">Modelo de contribución simplificado; no incluye impuestos, costos fijos ni cambios de demanda.</p></article></div>
+      </section>
+      <section class="view" data-view="gerencia">
+        <div class="section-intro"><div><p class="overline">DIRECCIÓN DEL RESTAURANTE</p><h1>Decisiones con contexto.</h1><p class="subhead">Indicadores separados por fuente; la contabilidad oficial sigue correspondiendo al sistema fiscal y contable.</p></div></div><div class="metrics" id="managementMetrics"></div><div class="dashboard-grid"><article class="surface"><p class="overline">OPERACIÓN PANACEA</p><h2>Comandas por estado</h2><div id="managementOrders"></div></article><article class="surface"><p class="overline">FUENTES EXTERNAS</p><h2>Datos nativos de TastyIgniter</h2><div id="managementSources"></div></article></div>
       </section>
 
       <footer class="footer"><span>Panacea Restaurant · Operations Studio</span><span id="footerMode">Entorno local · Fuente real</span></footer>
