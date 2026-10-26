@@ -20,7 +20,10 @@
   </script>
   <link rel="stylesheet" href="{{ asset('panacea/studio-premium.css') }}?v=4">
   <link rel="stylesheet" href="{{ asset('panacea/studio-air.css') }}?v=6">
-  <script defer src="{{ asset('panacea/studio.js') }}?v=6"></script>
+  <link rel="stylesheet" href="{{ asset('panacea/studio-menu.css') }}?v=1">
+  <link rel="stylesheet" href="{{ asset('panacea/studio-night.css') }}?v=1">
+  <script defer src="{{ asset('panacea/menu-imagery.js') }}?v=1"></script>
+  <script defer src="{{ asset('panacea/studio.js') }}?v=7"></script>
   <script defer src="{{ asset('panacea/studio-shell.js') }}?v=4"></script>
 </head>
 <body>
