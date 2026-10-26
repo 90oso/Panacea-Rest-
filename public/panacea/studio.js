@@ -383,6 +383,44 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
   function demoAction(type,p){
     const data=demo,now=dbDate(new Date());
     const uid=arr=>Math.max(9000,...arr.map(x=>Number(x.id)||0))+1;
+
+    const x=data.extensions;
+    if(type==='ingredient_create'){
+      x.ingredients.push({id:uid(x.ingredients),name:p.name,unit:p.unit,min_stock:Number(p.min_stock),unit_cost:Number(p.unit_cost),stock:0,active:true});
+    }
+    if(type==='stock_receive'){
+      const ingredient=x.ingredients.find(i=>i.id===Number(p.ingredient_id));
+      if(!ingredient)throw Error('Ingrediente no disponible.');
+      const qty=Number(p.quantity);
+      if(qty<=0)throw Error('La entrada debe ser positiva.');
+      ingredient.stock=Math.round((Number(ingredient.stock)+qty)*1000)/1000;
+      ingredient.unit_cost=Number(p.unit_cost);
+      x.movements.unshift({id:uid(x.movements),ingredient_id:ingredient.id,kind:'receive',quantity_delta:qty,unit_cost:ingredient.unit_cost});
+    }
+    if(type==='recipe_set'){
+      if(!data.menus.some(m=>m.id===Number(p.menu_id))||!x.ingredients.some(i=>i.id===Number(p.ingredient_id)))throw Error('Producto o ingrediente no encontrado.');
+      const existing=x.recipes.find(r=>r.menu_id===Number(p.menu_id)&&r.ingredient_id===Number(p.ingredient_id));
+      if(existing)existing.quantity=Number(p.quantity);
+      else x.recipes.push({id:uid(x.recipes),menu_id:Number(p.menu_id),ingredient_id:Number(p.ingredient_id),quantity:Number(p.quantity)});
+    }
+    if(type==='profile_create'){
+      x.customers.push({id:uid(x.customers),display_name:p.display_name,contact_opt_in:Boolean(p.contact_opt_in),visits_count:0});
+    }
+    if(type==='staff_create'){
+      x.staff.push({id:uid(x.staff),display_name:p.display_name,role:p.role,shift_label:p.shift_label||'',active:true});
+    }
+    if(type==='incident_create'){
+      x.incidents.unshift({id:uid(x.incidents),title:p.title,severity:p.severity,owner_label:p.owner_label||'',dining_table_id:p.dining_table_id||null,status:'open'});
+    }
+    if(type==='incident_resolve'){
+      const i=x.incidents.find(i=>i.id===Number(p.incident_id));if(!i||i.status!=='open')throw Error('Incidencia no disponible.');
+      i.status='resolved';
+    }
+    if(type==='confirm_reservation'){
+      const r=data.reservations.find(r=>r.id===Number(p.reservation_id));if(!r||r.status!=='pending')throw Error('La solicitud ya no está pendiente.');
+      r.status='confirmed';
+    }
+
     if(type==='reserve'){
       const table=data.tables.find(t=>t.id===Number(p.table_id));
       if(!table||Number(p.party_size)<Number(table.min_capacity)||Number(p.party_size)>Number(table.capacity))throw Error('Capacidad fuera del rango de la mesa.');
@@ -393,7 +431,7 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     }
     if(type==='cancel_reservation'){
       const r=data.reservations.find(r=>r.id===Number(p.reservation_id));
-      if(!r||r.status!=='confirmed')throw Error('No se puede cancelar esta reserva.');
+      if(!r||!['confirmed','pending'].includes(r.status))throw Error('No se puede cancelar esta reserva.');
       r.status='cancelled';
     }
     if(type==='seat'){
@@ -403,7 +441,7 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
       const near=data.reservations.find(r=>r.dining_table_id===t.id&&r.status==='confirmed'&&Math.abs(new Date(String(r.reserved_at).replace(' ','T')).getTime()-Date.now())<90*60000);
       if(near&&Number(p.reservation_id)!==Number(near.id))throw Error('Hay una reserva próxima: recibe primero esa reserva.');
       if(p.reservation_id){const r=data.reservations.find(r=>r.id===Number(p.reservation_id));if(!r||r.status!=='confirmed'||r.dining_table_id!==t.id)throw Error('Reserva inválida.');r.status='seated';}
-      data.sessions.push({id:uid(data.sessions),dining_table_id:t.id,reservation_id:p.reservation_id||null,guest_name:p.guest_name,party_size:Number(p.party_size),status:'open',opened_at:now});
+      data.sessions.push({id:uid(data.sessions),dining_table_id:t.id,reservation_id:p.reservation_id||null,guest_name:p.guest_name,party_size:Number(p.party_size),guest_profile_id:p.guest_profile_id?Number(p.guest_profile_id):null,status:'open',opened_at:now});
     }
     if(type==='add_order'){
       const s=data.sessions.find(s=>s.id===Number(p.session_id)&&s.status==='open');if(!s)throw Error('Servicio no disponible.');
@@ -418,6 +456,24 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     }
     if(type==='advance_order'){
       const o=data.orders.find(o=>o.id===Number(p.order_id));if(!o||!nextStep[o.status])throw Error('El pedido ya terminó.');
+      if(o.status==='pending'){
+        const requests=[];
+        for(const line of data.lines.filter(l=>l.order_id===o.id)){
+          for(const recipe of x.recipes.filter(r=>r.menu_id===line.menu_id)){
+            requests.push({ingredient_id:recipe.ingredient_id,order_line_id:line.id,qty:Math.round(recipe.quantity*line.quantity*1000)/1000});
+          }
+        }
+        for(const ingredient of x.ingredients){
+          const required=requests.filter(q=>q.ingredient_id===ingredient.id).reduce((sum,q)=>sum+q.qty,0);
+          if(required>ingredient.stock+0.0001)throw Error('Stock insuficiente: '+ingredient.name);
+        }
+        for(const request of requests){
+          const ingredient=x.ingredients.find(i=>i.id===request.ingredient_id);
+          ingredient.stock=Math.round((ingredient.stock-request.qty)*1000)/1000;
+          x.movements.unshift({id:uid(x.movements),ingredient_id:ingredient.id,kind:'consume',quantity_delta:-request.qty,unit_cost:ingredient.unit_cost,order_line_id:request.order_line_id});
+          x.cost_totals.consumed+=request.qty*ingredient.unit_cost;
+        }
+      }
       o.status=nextStep[o.status];
     }
     if(type==='pay'){
@@ -430,6 +486,7 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
       const s=data.sessions.find(s=>s.id===Number(p.session_id)&&s.status==='open');if(!s)throw Error('Servicio cerrado.');
       if(sessionBalance(data,s.id).due>0||pendingOrders(data,s.id).some(o=>o.status!=='served'))throw Error('Faltan entregas o pagos.');
       s.status='closed';s.closed_at=now;
+      if(s.guest_profile_id){const person=x.customers.find(p=>p.id===s.guest_profile_id);if(person)person.visits_count+=1;}
     }
     render();return {ok:true};
   }
