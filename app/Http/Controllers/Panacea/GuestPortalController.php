@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Panacea;
 
 use App\Http\Controllers\Controller;
 use App\Services\Panacea\Operations;
+use App\Services\Panacea\MenuPresentation;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -30,14 +31,20 @@ class GuestPortalController extends Controller
         $columns = Schema::getColumnListing('menus');
         if (count(array_intersect(['menu_id','menu_name','menu_price'], $columns)) !== 3) return [];
 
-        return DB::table('menus')->select('menu_id','menu_name','menu_price')
+        $selection = ['menu_id', 'menu_name', 'menu_price'];
+        if (in_array('menu_description', $columns, true)) $selection[] = 'menu_description';
+
+        $items = DB::table('menus')->select($selection)
             ->whereNotNull('menu_price')->orderBy('menu_name')->limit(80)
             ->get()->filter(fn ($row) => is_numeric($row->menu_price) && (float) $row->menu_price >= 0)
             ->map(fn ($row) => [
                 'id' => (int) $row->menu_id,
                 'name' => (string) $row->menu_name,
                 'price' => (float) $row->menu_price,
+                'description' => trim(mb_substr(strip_tags((string) ($row->menu_description ?? '')), 0, 175)),
             ])->values()->all();
+
+        return MenuPresentation::withPhotos($items);
     }
 
     public function index()
