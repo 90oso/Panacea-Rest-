@@ -315,8 +315,7 @@
     state.index=-1;
     state.mode=null;
     state.steps=[];
-    state.playing=false;
-    clearAutoplay();
+    stopAutoplay();
     setText(elements.chapter,'BIENVENIDA · MODO PRESENTACIÓN');
     setText(elements.counter,'ELIGE TU AVENTURA');
     setText(elements.title,'Tu restaurante, explicado paso a paso.');
