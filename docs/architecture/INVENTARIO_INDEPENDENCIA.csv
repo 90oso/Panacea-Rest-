@@ -26,6 +26,7 @@ path,origen,decision,prioridad,criterio
 "app/Models/User.php","COINCIDENCIA_UPSTREAM_4X_VERIFICADA","REGENERAR","P0","User propio; Sanctum explícito si se usa; roles/tenancy desde diseño."
 "app/Providers/AppServiceProvider.php","BASE_HEREDADA_COMPARACION_PENDIENTE","REGENERAR","P0","Usar esqueleto de Laravel limpio y configurar Core sin Igniter."
 "app/Providers/AuthServiceProvider.php","BASE_HEREDADA_COMPARACION_PENDIENTE","REGENERAR","P0","Usar esqueleto de Laravel limpio y configurar Core sin Igniter."
+"app/Providers/BroadcastServiceProvider.php","BASE_HEREDADA_COMPARACION_PENDIENTE","REGENERAR","P0","Usar servicio broadcasting de Laravel limpio y diseño propio para eventos KDS."
 "app/Providers/EventServiceProvider.php","BASE_HEREDADA_COMPARACION_PENDIENTE","REGENERAR","P0","Usar esqueleto de Laravel limpio y configurar Core sin Igniter."
 "app/Providers/RouteServiceProvider.php","BASE_HEREDADA_COMPARACION_PENDIENTE","REGENERAR","P0","Usar esqueleto de Laravel limpio y configurar Core sin Igniter."
 "app/Services/Panacea/MenuPresentation.php","RUTA_PANACEA_NO_EN_UPSTREAM_VERIFICADA","REESCRIBIR","P0","Sustituir Igniter Cart Menu/thumb por modelo propio de media."
