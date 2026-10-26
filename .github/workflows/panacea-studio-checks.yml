@@ -27,8 +27,12 @@ jobs:
         run: node --check public/panacea/studio.js
       - name: Unified UI DOM smoke
         run: node tests/panacea-studio-dom-smoke.mjs
+      - name: Premium shell navigation and accessibility smoke
+        run: node tests/panacea-studio-shell-smoke.mjs
       - name: Required app files present
         run: |
           test -s resources/views/panacea/studio.blade.php
           test -s public/panacea/studio.css
           test -s public/panacea/studio.js
+          test -s public/panacea/studio-premium.css
+          test -s public/panacea/studio-shell.js
