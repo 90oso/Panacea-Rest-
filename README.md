@@ -13,6 +13,9 @@
 > [!IMPORTANT]
 > **Estado al 26 de octubre de 2026: desarrollo/MVP local.** No es un POS certificado ni una instalación preparada para producción. Las escrituras de Panacea viven principalmente en tablas propias y **no están todavía sincronizadas con el ciclo de vida completo de pedidos, reservas, pagos o stock nativos de TastyIgniter**. Sin autenticación/autorización efectiva por empleado ni integración fiscal/bancaria, **no publicar estos endpoints**.
 
+> [!NOTE]
+> **Nueva dirección arquitectónica:** el próximo Panacea Core será **independiente de TastyIgniter**. Este repositorio se conserva para demostrar y extraer las funcionalidades propias; **todavía está basado en TastyIgniter**. No se ha eliminado ninguna dependencia del ejecutable. Consulta la [auditoría de independencia](docs/architecture/AUDITORIA_INDEPENDENCIA.md), el [inventario de 145 archivos](docs/architecture/INVENTARIO_INDEPENDENCIA.csv) y el [plan de migración](docs/architecture/PLAN_MIGRACION_CORE.md).
+
 ## ¿Qué es Panacea Restaurant?
 
 Panacea Restaurant busca reunir en un espacio el recorrido del negocio:
