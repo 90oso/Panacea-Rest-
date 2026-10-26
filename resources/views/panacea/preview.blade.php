@@ -104,11 +104,12 @@ function renderRealRoom(){
  floorElements=(area.elements||[]).map(e=>({...e}));floorProps=Object.fromEntries(ts.map(t=>[t.id,{id:t.id,name:t.name,capacity:t.capacity,shape:t.shape}]));
  floorPositions=Object.fromEntries(ts.map((t,i)=>[t.id,{x:Number(t.seatLayout?.x??(30+(i%4)*160)),y:Number(t.seatLayout?.y??(30+Math.floor(i/4)*145)),rotation:Number(t.seatLayout?.rotation??0)}]));
  drawRealFloor();
- detail.innerHTML='<h2>Mesas reales</h2><p>'+ts.length+' mesas de TastyIgniter. Selecciona una para ver su capacidad. Ocupación no verificada.</p>';
+ detail.innerHTML='<h2>Operación del salón</h2><p>'+ts.length+' mesas registradas · '+(realRoom.reservation_links||[]).length+' asociaciones de reservas · '+(realRoom.order_links||[]).length+' pedidos vinculados por mesa.</p><p>La ausencia de asociaciones no confirma disponibilidad.</p>'+(realRoom.operations_error?'<p>'+safe(realRoom.operations_error)+'</p>':'');
 }
 function drawRealFloor(){
  const grid=document.getElementById('roomGrid');grid.classList.add('real-floor');grid.classList.toggle('floor-editing',floorEditing);
  const ts=realRoom.tables.filter(t=>t.area_id===floorArea);
+ const linkedReservations=realRoom.reservation_links||[],linkedOrders=realRoom.order_links||[];
  grid.innerHTML=floorElements.map((e,i)=>'<div class="architectural '+e.kind+'" data-floor-element="'+i+'" style="left:'+Number(e.x)+'px;top:'+Number(e.y)+'px;width:'+Number(e.width)+'px;height:'+Number(e.height)+'px" title="'+safe(e.label||e.kind)+'"><span>'+safe(e.label||({wall:'Pared',door:'Puerta',window:'Ventana',aisle:'Paso'}[e.kind]))+'</span></div>').join('')+ts.map(t=>{const p=floorPositions[t.id],prop=floorProps[t.id];return '<button type="button" class="table-unit floor-table '+(prop.shape==='rectangle'?'floor-rectangle':'')+'" data-real-table="'+t.id+'" style="left:'+p.x+'px;top:'+p.y+'px;transform:rotate('+p.rotation+'deg)"><strong>'+safe(prop.name)+'</strong><small>'+safe(prop.shape)+'</small><small>♙ '+prop.capacity+' plazas</small></button>'}).join('');
  document.getElementById('floorEdit').hidden=floorEditing;
  document.getElementById('floorSave').hidden=!floorEditing;
