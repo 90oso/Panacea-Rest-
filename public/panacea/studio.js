@@ -38,8 +38,19 @@
   function empty(title,description,action=''){
     return '<div class="empty"><strong>'+esc(title)+'</strong>'+esc(description)+(action?'<div style="margin-top:13px">'+action+'</div>':'')+'</div>';
   }
+  function visualIcon(name, extraClass=''){
+    const allowed=['home','calendar','table','orders','chef','wallet','book','box','users','staff','alert','sliders','chart','refresh','sun','moon','sparkles','plus','arrow','check','layers','bell'];
+    return '<svg class="icon '+extraClass+'" aria-hidden="true" focusable="false"><use href="#ic-'+(allowed.includes(name)?name:'layers')+'"></use></svg>';
+  }
   function metric(title,value,note){
-    return '<div class="metric"><span>'+esc(title)+'</span><strong>'+esc(value)+'</strong><small>'+esc(note)+'</small></div>';
+    const t=String(title).toLowerCase();
+    const icon=t.includes('mesa')?'table':t.includes('reserva')?'calendar':
+      t.includes('cocina')?'chef':t.includes('pedido')||t.includes('comanda')?'orders':
+      t.includes('servicio')?'users':t.includes('cobro')||t.includes('saldo')||t.includes('abono')||t.includes('ingreso')?'wallet':
+      t.includes('cliente')?'users':t.includes('stock')||t.includes('compra')?'box':
+      t.includes('turno')||t.includes('personal')?'staff':
+      t.includes('producto')?'book':t.includes('margen')||t.includes('cost')||t.includes('precio')?'chart':'layers';
+    return '<div class="metric"><span>'+esc(title)+'</span><div class="metric-icon">'+visualIcon(icon)+'</div><strong>'+esc(value)+'</strong><small>'+esc(note)+'</small></div>';
   }
   function pendingOrders(data,sessionId){return (data.orders||[]).filter(o=>Number(o.session_id)===Number(sessionId));}
   function openSession(data,tableId){return (data.sessions||[]).find(s=>Number(s.dining_table_id)===Number(tableId)&&s.status==='open');}
@@ -140,11 +151,13 @@
     $('demoMode').setAttribute('aria-pressed',String(source==='demo'));
     $('sourceIndicator').textContent=source==='real'?'● BASE DE DATOS LOCAL':'✦ ESCENARIO FICTICIO';
     $('footerMode').textContent=source==='real'?'Datos reales · Desarrollo local':'Demo · Cambios solo en memoria';
+    document.body.dataset.mode=source;
     render();
   }
   function render(){
     if(!current())return;
     const data=current();
+    document.body.dataset.mode=source;
     $('sourceIndicator').textContent=source==='real'?'● BASE DE DATOS LOCAL':'✦ ESCENARIO FICTICIO';
     $('footerMode').textContent=source==='real'?'Datos reales · Desarrollo local':'Demo · Cambios solo en memoria';
     renderView();
@@ -208,6 +221,7 @@
     $('areaName').textContent=area?.name||'Salón principal';
     $('roomMeta').innerHTML='<span>'+tables.length+' mesas configuradas</span><span>'+open.length+' servicios activos</span><span>'+future.length+' reservas confirmadas</span><span>'+(source==='real'?'Datos desde MariaDB':'Estados simulados')+'</span>';
     $('editFloor').textContent=editDraft?'Editando plano':'Editar plano';
+    $('editFloor').setAttribute('aria-pressed', String(!!editDraft));
     $('editToolbar').hidden=!editDraft;
     $('floorHint').textContent=editDraft?'Arrastra para mover · selecciona para editar':'Desplaza el plano para explorar';
     const areas=(area?.elements||[]);
