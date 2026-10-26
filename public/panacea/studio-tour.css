@@ -190,6 +190,18 @@
   color:#d7e3d3;
   letter-spacing:-.1px;
 }
+.tour-portal-link{
+  display:inline-flex;align-items:center;justify-content:space-between;gap:16px;
+  margin-top:17px;padding:10px 13px;
+  border:1px solid rgba(238,194,145,.42);
+  border-radius:9px;
+  background:rgba(224,174,122,.13);
+  color:#ffddb8;
+  font:800 11px 'Manrope',sans-serif;
+  text-decoration:none;
+  transition:background .18s ease,border-color .18s ease;
+}
+.tour-portal-link:hover{background:rgba(237,193,142,.22);border-color:#f5cf9f;color:#fff4e8}
 .tour-chooser{display:grid;gap:9px;margin:24px 0 3px}
 .tour-choose-button{
   width:100%;
