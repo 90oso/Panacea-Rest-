@@ -25,6 +25,8 @@ jobs:
           php -l database/migrations/2026_10_25_000002_create_panacea_service_workflow_tables.php
       - name: JavaScript syntax
         run: node --check public/panacea/studio.js
+      - name: Unified UI DOM smoke
+        run: node tests/panacea-studio-dom-smoke.mjs
       - name: Required app files present
         run: |
           test -s resources/views/panacea/studio.blade.php
