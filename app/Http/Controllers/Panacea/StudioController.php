@@ -49,7 +49,11 @@ class StudioController extends Controller
         foreach (['menus','dining_tables','dining_areas','reservation_tables','reservations','orders','stocks'] as $table) {
             $native[$table] = Schema::hasTable($table);
         }
+        $management = Operations::snapshot();
         return response()->json([
+            'management_snapshot_ready' => (bool) ($management['ready'] ?? false),
+            'management_snapshot_reason' => $management['reason'] ?? null,
+            'management_snapshot_warning' => $management['error'] ?? null,
             'environment' => 'local-development',
             'service_schema_ready' => collect(self::REQUIRED_TABLES)->every(fn ($table) => Schema::hasTable($table)),
             'management_schema_ready' => Operations::ready(),
