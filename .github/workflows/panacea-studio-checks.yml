@@ -27,6 +27,7 @@ jobs:
           php -l database/migrations/2026_10_25_000002_create_panacea_service_workflow_tables.php
           php -l database/migrations/2026_10_25_000003_create_panacea_management_tables.php
           php -l database/migrations/2026_10_25_000004_add_guest_booking_metadata.php
+          php -l database/migrations/2026_10_25_000005_add_payment_idempotency.php
       - name: JavaScript syntax
         run: node --check public/panacea/studio.js
       - name: Guest experience and operational UI syntax
