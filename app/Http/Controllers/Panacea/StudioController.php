@@ -81,12 +81,21 @@ class StudioController extends Controller
         }
 
         $nativeReservations = [];
+        $nativeLinks = [];
         if (Schema::hasTable('reservations')) {
             $cols = Schema::getColumnListing('reservations');
             $selected = array_values(array_intersect(['reservation_id','reserve_date','reserve_time','status_id'], $cols));
             if (in_array('reservation_id', $selected, true)) {
                 $nativeReservations = DB::table('reservations')->select($selected)
                     ->orderByDesc('reservation_id')->limit(80)->get();
+            }
+        }
+
+        if (Schema::hasTable('reservation_tables')) {
+            $cols = Schema::getColumnListing('reservation_tables');
+            if (in_array('reservation_id', $cols, true) && in_array('dining_table_id', $cols, true)) {
+                $nativeLinks = DB::table('reservation_tables')->select('reservation_id','dining_table_id')
+                    ->limit(500)->get();
             }
         }
 
@@ -117,7 +126,7 @@ class StudioController extends Controller
         return response()->json([
             'source_counts' => $counts,
             'mode' => 'real', 'migrated' => $migrated, 'areas' => $areas, 'tables' => $tables,
-            'menus' => $menus, 'native_reservations' => $nativeReservations,
+            'menus' => $menus, 'native_reservations' => $nativeReservations, 'native_links' => $nativeLinks,
             'reservations' => $reservations, 'sessions' => $sessions,
             'orders' => $orders, 'lines' => $lines, 'payments' => $payments,
         ]);
@@ -205,6 +214,17 @@ class StudioController extends Controller
                 if (DB::table('panacea_service_sessions')->where('dining_table_id', $table->id)
                     ->where('status', 'open')->exists()) $this->fail('La mesa ya tiene un servicio abierto.');
                 $reservationId = $p['reservation_id'] ?? null;
+                $timezone = 'America/Panama';
+                $localNow = Carbon::now($timezone);
+                $nearReservation = DB::table('panacea_service_reservations')
+                    ->where('dining_table_id', $table->id)->where('status', 'confirmed')
+                    ->whereBetween('reserved_at', [
+                        $localNow->copy()->subMinutes(90)->toDateTimeString(),
+                        $localNow->copy()->addMinutes(90)->toDateTimeString(),
+                    ])->orderBy('reserved_at')->first();
+                if ($nearReservation && (int) $reservationId !== (int) $nearReservation->id) {
+                    $this->fail('La mesa tiene una reserva próxima. Recibe primero esa reserva.');
+                }
                 if ($reservationId) {
                     $reservation = DB::table('panacea_service_reservations')->where('id', $reservationId)
                         ->lockForUpdate()->first();
