@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Igniter\Reservation\Models\DiningArea;
 use Igniter\Reservation\Models\DiningTable;
+use App\Services\Panacea\Operations;
 
 class StudioController extends Controller
 {
@@ -118,12 +119,14 @@ class StudioController extends Controller
                 ->orderByDesc('id')->get()
             : [];
 
+        $extensions = Operations::snapshot();
         $counts = [];
         foreach (['stocks','customers','staffs','orders','menus'] as $name) {
             $counts[$name] = Schema::hasTable($name) ? DB::table($name)->count() : null;
         }
 
         return response()->json([
+            'extensions' => $extensions,
             'source_counts' => $counts,
             'mode' => 'real', 'migrated' => $migrated, 'areas' => $areas, 'tables' => $tables,
             'menus' => $menus, 'native_reservations' => $nativeReservations, 'native_links' => $nativeLinks,
@@ -162,8 +165,12 @@ class StudioController extends Controller
     {
         $this->guard();
         $this->ready();
-        $base = $request->validate(['type' => ['required', 'in:reserve,cancel_reservation,seat,add_order,advance_order,pay,close']]);
+        $base = $request->validate(['type' => ['required', 'in:reserve,confirm_reservation,cancel_reservation,seat,add_order,advance_order,pay,close,ingredient_create,stock_receive,recipe_set,profile_create,staff_create,incident_create,incident_resolve']]);
         $type = $base['type'];
+        $extensions = ['ingredient_create','stock_receive','recipe_set','profile_create','staff_create','incident_create','incident_resolve'];
+        if (in_array($type, $extensions, true)) {
+            return response()->json(DB::transaction(fn () => Operations::action($request, $type), 3));
+        }
 
         return DB::transaction(function () use ($request, $type) {
             $result = ['ok' => true];
@@ -187,19 +194,37 @@ class StudioController extends Controller
                     ->where('dining_table_id', $table->id)->where('status', 'confirmed')
                     ->where('reserved_at', '>', $start->copy()->subMinutes(90))
                     ->where('reserved_at', '<', $start->copy()->addMinutes(90))->exists();
-                if ($conflicts) $this->fail('Ya existe una reserva en ese intervalo para la mesa.');
+                if ($conflicts || Operations::hasPanaceaConflict((int) $table->id, $start)
+                    || Operations::hasNativeReservationConflict((int) $table->id, $start)) {
+                    $this->fail('La mesa tiene otra reserva o un vínculo nativo en ese horario.');
+                }
                 $result['id'] = DB::table('panacea_service_reservations')->insertGetId([
                     'dining_table_id' => $table->id, 'guest_name' => trim($p['guest_name']),
                     'party_size' => $p['party_size'], 'reserved_at' => $start,
                     'duration_minutes' => 90, 'status' => 'confirmed',
                     'notes' => $p['notes'] ?? null, 'created_at' => now(), 'updated_at' => now(),
                 ]);
+            } elseif ($type === 'confirm_reservation') {
+                $p = $request->validate(['reservation_id' => ['required','integer']]);
+                $reservation = DB::table('panacea_service_reservations')
+                    ->where('id', $p['reservation_id'])->lockForUpdate()->first();
+                abort_unless($reservation, 404);
+                if ($reservation->status !== 'pending') $this->fail('Solo se confirman solicitudes pendientes.');
+                $table = $this->lockTable((int) $reservation->dining_table_id);
+                $start = Carbon::parse($reservation->reserved_at, 'America/Panama');
+                if (Operations::hasPanaceaConflict((int) $table->id, $start, (int) $reservation->id)
+                    || Operations::hasNativeReservationConflict((int) $table->id, $start)) {
+                    $this->fail('La solicitud coincide con otra reserva.');
+                }
+                DB::table('panacea_service_reservations')->where('id', $reservation->id)
+                    ->update(['status' => 'confirmed','updated_at' => now()]);
+                Operations::audit('reservation.confirm', 'reservation', (int) $reservation->id);
             } elseif ($type === 'cancel_reservation') {
                 $p = $request->validate(['reservation_id' => ['required','integer']]);
                 $reservation = DB::table('panacea_service_reservations')->where('id', $p['reservation_id'])
                     ->lockForUpdate()->first();
                 abort_unless($reservation, 404);
-                if ($reservation->status !== 'confirmed') $this->fail('Solo se pueden cancelar reservas confirmadas.');
+                if (!in_array($reservation->status, ['confirmed','pending'], true)) $this->fail('Esta reserva ya no puede cancelarse.');
                 DB::table('panacea_service_reservations')->where('id', $reservation->id)
                     ->update(['status' => 'cancelled','updated_at' => now()]);
             } elseif ($type === 'seat') {
@@ -208,11 +233,16 @@ class StudioController extends Controller
                     'guest_name' => ['required','string','max:100'],
                     'party_size' => ['required','integer','between:1,50'],
                     'reservation_id' => ['nullable','integer'],
+                    'guest_profile_id' => ['nullable','integer'],
                 ]);
                 $table = $this->lockTable($p['table_id']);
                 $this->checkCapacity($table, $p['party_size']);
                 if (DB::table('panacea_service_sessions')->where('dining_table_id', $table->id)
                     ->where('status', 'open')->exists()) $this->fail('La mesa ya tiene un servicio abierto.');
+                $profileId = $p['guest_profile_id'] ?? null;
+                if ($profileId && !DB::table('panacea_guest_profiles')->where('id', $profileId)->exists()) {
+                    $this->fail('Perfil de cliente no encontrado.');
+                }
                 $reservationId = $p['reservation_id'] ?? null;
                 $timezone = 'America/Panama';
                 $localNow = Carbon::now($timezone);
@@ -235,8 +265,12 @@ class StudioController extends Controller
                     DB::table('panacea_service_reservations')->where('id', $reservationId)
                         ->update(['status' => 'seated', 'updated_at' => now()]);
                 }
+                if (!$reservationId && Operations::hasNativeReservationConflict((int) $table->id, $localNow)) {
+                    $this->fail('Hay una reserva nativa cercana sin estado confirmado.');
+                }
                 $result['id'] = DB::table('panacea_service_sessions')->insertGetId([
                     'dining_table_id' => $table->id, 'reservation_id' => $reservationId,
+                    'guest_profile_id' => $profileId,
                     'guest_name' => trim($p['guest_name']), 'party_size' => $p['party_size'],
                     'status' => 'open', 'opened_at' => now(), 'created_at' => now(), 'updated_at' => now(),
                 ]);
@@ -280,6 +314,7 @@ class StudioController extends Controller
                 abort_unless($order, 404);
                 $next = ['pending' => 'preparing', 'preparing' => 'ready', 'ready' => 'served'];
                 if (!isset($next[$order->status])) $this->fail('El pedido ya terminó su recorrido.');
+                if ($order->status === 'pending') Operations::consumeForOrder((int) $order->id);
                 DB::table('panacea_service_orders')->where('id', $order->id)
                     ->update(['status' => $next[$order->status], 'updated_at' => now()]);
             } elseif ($type === 'pay') {
@@ -315,8 +350,19 @@ class StudioController extends Controller
                 DB::table('panacea_service_sessions')->where('id', $session->id)->update([
                     'status' => 'closed', 'closed_at' => now(), 'updated_at' => now(),
                 ]);
+                if (!empty($session->guest_profile_id) && Operations::ready()) {
+                    DB::table('panacea_guest_profiles')->where('id', $session->guest_profile_id)->increment('visits_count');
+                    DB::table('panacea_guest_profiles')->where('id', $session->guest_profile_id)->update([
+                        'last_visit_at' => now(),'updated_at' => now(),
+                    ]);
+                }
             }
 
+            Operations::audit($type, match ($type) {
+                'reserve','confirm_reservation','cancel_reservation' => 'reservation',
+                'seat','close','pay' => 'service',
+                default => 'order',
+            }, (int) ($result['id'] ?? $p['reservation_id'] ?? $p['session_id'] ?? $p['order_id'] ?? 0) ?: null);
             return response()->json($result);
         }, 3);
     }
