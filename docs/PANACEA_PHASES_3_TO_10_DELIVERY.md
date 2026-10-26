@@ -13,7 +13,7 @@ docker compose -f compose.panacea.yml exec app php artisan optimize:clear
 
 **Panel del personal:** http://localhost:8088/panacea-preview
 
-**Portada del cliente:** http://localhost:8088/panacea
+**Portada del cliente:** http://localhost:8088/experiencia
 
 **Estado técnico (sin datos personales):** http://localhost:8088/panacea-preview/health
 
@@ -42,11 +42,11 @@ Si no aparecen los nuevos estilos, utiliza Ctrl+F5.
 - Recomendaciones con reglas transparentes sobre reservas pendientes, cocina atrasada, stock bajo, incidencias y saldos abiertos. **No es IA generativa**, ni se presentan métricas como utilidad neta o ventas fiscalmente conciliadas.
 
 ## 4. Experiencia de cliente
-- Nueva portada `/panacea`: estilo gastronómico luminoso, fotografía ilustrativa, animaciones con `prefers-reduced-motion`, carta consultable y buscador.
+- Nueva portada `/experiencia`: estilo gastronómico luminoso, fotografía ilustrativa, animaciones con `prefers-reduced-motion`, carta consultable y buscador.
 - El catálogo se obtiene de la tabla nativa `menus`, sin precios inventados.
 - Solicitud de reserva con correo, nombre, fecha, comensales, consentimiento, limitación de frecuencia, validaciones y asignación conservadora de mesa.
 - La solicitud queda **pendiente**; el personal debe confirmar desde Reservas. No enviamos correos de confirmación todavía.
-- **No se sustituye** el inicio nativo `/` de TastyIgniter en esta fase. La portada se muestra por `/panacea` para no alterar rutas y extensiones existentes.
+- **No se sustituye** el inicio nativo `/` de TastyIgniter en esta fase. La portada se muestra por `/experiencia` para no alterar rutas y extensiones existentes.
 - Antes de lanzar la portada públicamente hacen falta privacidad, notificaciones, autenticación operativa, políticas de atención, antiabuso persistente y revisión fiscal/legal aplicable.
 
 ## Rediseño paralelo
@@ -59,7 +59,7 @@ Si no aparecen los nuevos estilos, utiliza Ctrl+F5.
 1. Ejecutar migraciones y abrir el endpoint `/panacea-preview/health`. Comprobar `service_schema_ready=true` y `management_schema_ready=true`.
 2. En **Demo**, probar menú, salón, reserva, servicio, comanda, preparación, cobro y cierre. Comprobar que los cambios Demo no pasan a MariaDB.
 3. En **Datos reales**, crear ingrediente, registrar entrada, vincular una receta con un producto y enviar una comanda al estado `preparing`; verificar la reducción de stock Panacea. Intentar preparar otra comanda con existencia insuficiente.
-4. Desde `/panacea`, solicitar una reserva futura con datos de prueba. Debe mostrarse un número de solicitud con estado pendiente.
+4. Desde `/experiencia`, solicitar una reserva futura con datos de prueba. Debe mostrarse un número de solicitud con estado pendiente.
 5. En `/panacea-preview#reservas`, revisar la solicitud y confirmarla. Recibir al cliente, abrir servicio, avanzar la comanda por cocina, liquidar y cerrar.
 6. Probar una reserva superpuesta, un segundo servicio abierto para la misma mesa y un abono mayor que el saldo. Confirmar que se rechazan.
 7. Crear cliente, seleccionarlo al abrir un servicio y verificar que tras cerrar se registra una visita. Añadir integrante e incidencia y resolverla.
