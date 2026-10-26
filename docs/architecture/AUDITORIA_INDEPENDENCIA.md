@@ -5,7 +5,7 @@
 
 ## Resultado ejecutivo
 
-Se auditó el árbol visible en GitHub (código, configuración, recursos, migraciones, documentación y pruebas) y se creó un inventario **archivo por archivo de 144 rutas**: [INVENTARIO_INDEPENDENCIA.csv](INVENTARIO_INDEPENDENCIA.csv).
+Se auditó el árbol visible en GitHub (código, configuración, recursos, migraciones, documentación y pruebas) y se creó un inventario **archivo por archivo de 145 rutas**: [INVENTARIO_INDEPENDENCIA.csv](INVENTARIO_INDEPENDENCIA.csv).
 
 **Importante:** este conteo corresponde a los archivos versionados enumerados en esta rama para el corte; no incluye `vendor/`, `node_modules/`, el volumen de MariaDB, archivos de medios añadidos en ejecución ni contenido local sin publicar. Las comparaciones de contenido con la rama oficial `tastyigniter/TastyIgniter@4.x` se efectuaron selectivamente; **no atribuir procedencia verificada** a entradas etiquetadas como comparación pendiente.
 
@@ -18,7 +18,7 @@ Se comparó el contenido de los siguientes archivos entre `90oso/Panacea-Rest-@f
 | Metadatos de paquete | `composer.json`, `package.json`, `.env.example` |
 | Arranque | `artisan`, `bootstrap/app.php`, `public/index.php` |
 | Configuración | `config/app.php`, `config/auth.php`, `config/database.php`, `config/filesystems.php` |
-| Núcleo app | `app/Models/User.php`, `app/Http/Kernel.php`, `app/Providers/RouteServiceProvider.php`, `app/Providers/AuthServiceProvider.php` |
+| Núcleo app | `app/Models/User.php`, `app/Http/Kernel.php`, `app/Providers/RouteServiceProvider.php`, `app/Providers/AuthServiceProvider.php`, `app/Providers/BroadcastServiceProvider.php` |
 | Infraestructura/base | `phpunit.xml`, `webpack.mix.js`, `public/.htaccess`, `public/favicon.svg` |
 | Autoría/licencia | `LICENSE.md` |
 | Artefactos de release | `.github/workflows/pipeline.yml`, `.github/workflows/release.yml`, `.github/scripts/build-release-zip.sh` |
