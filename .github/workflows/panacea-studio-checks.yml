@@ -36,10 +36,13 @@ jobs:
           node --check public/panacea/guest.js
           node --check public/panacea/menu-imagery.js
           node --check public/panacea/studio-shell.js
+          node --check public/panacea/studio-tour.js
       - name: Native menu images, illustrative safety and dark contrast
         run: node tests/panacea-menu-imagery-smoke.mjs
       - name: Customer portal functional smoke
         run: node tests/panacea-guest-smoke.mjs
+      - name: Presenter Quest recording walkthrough smoke
+        run: node tests/panacea-presenter-quest-smoke.mjs
       - name: Unified UI DOM smoke
         run: node tests/panacea-studio-dom-smoke.mjs
       - name: Premium shell navigation and accessibility smoke
@@ -59,4 +62,6 @@ jobs:
           test -s public/panacea/menu-imagery.js
           test -s public/panacea/studio-menu.css
           test -s public/panacea/studio-night.css
+          test -s public/panacea/studio-tour.js
+          test -s public/panacea/studio-tour.css
           test -s resources/views/panacea/guest.blade.php
