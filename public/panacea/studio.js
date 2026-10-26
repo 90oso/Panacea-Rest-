@@ -19,7 +19,7 @@
   const statusNames={pending:'Pendiente',preparing:'Preparando',ready:'Listo',served:'Entregado',confirmed:'Confirmada',cancelled:'Cancelada',seated:'En servicio'};
   const nextStep={pending:'preparing',preparing:'ready',ready:'served'};
   const nextLabel={pending:'Comenzar preparación',preparing:'Marcar listo',ready:'Marcar entregado'};
-  let source='real',view='inicio',real=null,demo=null,selectedTable=null,selectedElement=null,editDraft=null,orderFilter='all',toastTimer=null,modalContext=null,loading=false,dragging=null;
+  let source='real',view='inicio',real=null,demo=null,selectedTable=null,selectedElement=null,editDraft=null,orderFilter='all',toastTimer=null,modalContext=null,modalRequestKey=null,loading=false,dragging=null;
   const labels={inicio:'RESUMEN',reservas:'RESERVAS',salon:'SALÓN',pedidos:'PEDIDOS',cocina:'COCINA',caja:'CAJA',menu:'CATÁLOGO',inventario:'INVENTARIO',clientes:'CLIENTES',personal:'PERSONAL',incidencias:'INCIDENCIAS',simulador:'SIMULADOR',gerencia:'GERENCIA'};
   const demoMenu=[
     {id:90001,name:'Pizza artesanal',price:16.50},
@@ -520,7 +520,8 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     try{await post(type,p);notify(success);render();return true}catch(error){notify(error.message,true);return false;}
   }
   function showModal(eyebrow,title,fields,action,button='Confirmar'){
-    modalContext=action;$('modalEyebrow').textContent=eyebrow;$('modalTitle').textContent=title;$('modalFields').innerHTML=fields;
+    modalContext=action;modalRequestKey=(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID().replaceAll('-',''):String(Date.now())+'_'+Math.random().toString(36).slice(2);
+    $('modalEyebrow').textContent=eyebrow;$('modalTitle').textContent=title;$('modalFields').innerHTML=fields;
     $('modalSubmit').textContent=button;$('modalError').hidden=true;$('modalOverlay').hidden=false;
     setTimeout(()=>$('modalForm').querySelector('input,select,textarea')?.focus(),0);
   }
@@ -644,6 +645,7 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     if(type==='seat'&&!data.reservation_id)delete data.reservation_id;
     if(type==='seat'&&!data.guest_profile_id)delete data.guest_profile_id;
     if(type==='profile_create')data.contact_opt_in=data.contact_opt_in==='1';
+    if(type==='pay')data.idempotency_key=modalRequestKey;
     if(type==='incident_create'&&!data.dining_table_id)delete data.dining_table_id;
     $('modalSubmit').disabled=true;$('modalError').hidden=true;
     try{
