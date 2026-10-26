@@ -1,0 +1,74 @@
+name: Panacea Studio static checks
+on:
+  push:
+    branches:
+      - feat/panacea-restaurant-mvp
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Panacea/**'
+      - 'database/migrations/*panacea*'
+      - 'resources/views/panacea/**'
+      - 'public/panacea/**'
+      - 'routes/web.php'
+      - 'README.md'
+      - 'docs/**'
+      - 'tests/panacea-*.mjs'
+      - '.github/workflows/panacea-studio-checks.yml'
+jobs:
+  php-js-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP route and controller syntax
+        run: |
+          php -l routes/web.php
+          php -l app/Http/Controllers/Panacea/StudioController.php
+          php -l app/Http/Controllers/Panacea/GuestPortalController.php
+          php -l app/Services/Panacea/Operations.php
+          php -l app/Services/Panacea/MenuPresentation.php
+          php -l database/migrations/2026_10_25_000001_create_panacea_floor_elements_table.php
+          php -l database/migrations/2026_10_25_000002_create_panacea_service_workflow_tables.php
+          php -l database/migrations/2026_10_25_000003_create_panacea_management_tables.php
+          php -l database/migrations/2026_10_25_000004_add_guest_booking_metadata.php
+          php -l database/migrations/2026_10_25_000005_add_payment_idempotency.php
+      - name: JavaScript syntax
+        run: node --check public/panacea/studio.js
+      - name: Guest experience and operational UI syntax
+        run: |
+          node --check public/panacea/guest.js
+          node --check public/panacea/menu-imagery.js
+          node --check public/panacea/studio-shell.js
+          node --check public/panacea/studio-tour.js
+      - name: Native menu images, illustrative safety and dark contrast
+        run: node tests/panacea-menu-imagery-smoke.mjs
+      - name: Customer portal functional smoke
+        run: node tests/panacea-guest-smoke.mjs
+      - name: Presenter Quest recording walkthrough smoke
+        run: node tests/panacea-presenter-quest-smoke.mjs
+      - name: Unified UI DOM smoke
+        run: node tests/panacea-studio-dom-smoke.mjs
+      - name: Premium shell navigation and accessibility smoke
+        run: node tests/panacea-studio-shell-smoke.mjs
+      - name: Regression for customer route, resilient reads and accessible contrast
+        run: node tests/panacea-regression-guards.mjs
+      - name: Independent Panacea inventory coverage (audit only)
+        run: node tests/panacea-independence-inventory-check.mjs
+      - name: Documentation links and traceability
+        run: node tests/panacea-docs-smoke.mjs
+      - name: Required app files present
+        run: |
+          test -s resources/views/panacea/studio.blade.php
+          test -s public/panacea/studio.css
+          test -s public/panacea/studio.js
+          test -s public/panacea/studio-premium.css
+          test -s public/panacea/studio-shell.js
+          test -s public/panacea/studio-air.css
+          test -s public/panacea/guest.css
+          test -s public/panacea/guest.js
+          test -s public/panacea/menu-imagery.js
+          test -s public/panacea/studio-menu.css
+          test -s public/panacea/studio-night.css
+          test -s public/panacea/studio-tour.js
+          test -s public/panacea/studio-tour.css
+          test -s resources/views/panacea/guest.blade.php

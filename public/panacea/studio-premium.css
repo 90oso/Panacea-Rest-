@@ -1,0 +1,459 @@
+/*
+ * Panacea Restaurant — Atelier visual system v4
+ * Premium hospitality × restrained glass × operational software.
+ * Layered over studio.css: intentionally no changes to data/business logic.
+ */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&display=swap');
+
+:root{
+  --bg:#f5f5f0;
+  --paper:#ffffffee;
+  --panel:#fffffff2;
+  --ink:#19392f;
+  --ink-sub:#63766a;
+  --muted:#83958a;
+  --accent:#b86b43;
+  --accent-light:#faeee5;
+  --line:#dbe4d8;
+  --tint:#ebf1eb;
+  --side:#15372c;
+  --side-ink:#edf4eb;
+  --shadow:0 18px 48px #193b2c0a,0 3px 9px #183f2906;
+  --glass:rgba(255,255,253,.82);
+  --glass-solid:rgba(255,255,252,.94);
+  --glass-edge:rgba(255,255,255,.84);
+  --glass-glow:rgba(250,225,195,.28);
+  --copper:#c98b60;
+  --ambient-green:rgba(161,194,156,.19);
+  --ambient-peach:rgba(227,170,136,.14);
+  --focus:#b67f52;
+  --heading:'Manrope',sans-serif;
+  --serif:'Cormorant Garamond',Georgia,serif;
+  color-scheme:light;
+}
+:root.dark{
+  --bg:#101b17;
+  --paper:#1c3028f5;
+  --panel:#1d3129ed;
+  --ink:#f0f4e9;
+  --ink-sub:#b7c8bb;
+  --muted:#92a79a;
+  --accent:#e9a779;
+  --accent-light:#403125;
+  --line:#3a5144;
+  --tint:#294136;
+  --side:#0c2119;
+  --side-ink:#ebf4e7;
+  --shadow:0 18px 56px #0005,0 1px 0 #ffffff0b inset;
+  --glass:rgba(27,48,39,.81);
+  --glass-solid:rgba(25,44,36,.95);
+  --glass-edge:rgba(203,230,211,.12);
+  --glass-glow:rgba(199,119,78,.12);
+  --copper:#dfaa78;
+  --ambient-green:rgba(60,117,79,.19);
+  --ambient-peach:rgba(141,91,59,.12);
+  --focus:#e0a574;
+  color-scheme:dark;
+}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(ellipse 65% 40% at 88% -8%,var(--ambient-peach),transparent 85%),
+    radial-gradient(ellipse 52% 42% at 37% 55%,var(--ambient-green),transparent 90%),
+    var(--bg);
+  background-attachment:fixed;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;z-index:-1;pointer-events:none;
+  width:min(650px,55vw);height:min(650px,55vw);
+  top:24%;right:5%;border-radius:50%;
+  background:radial-gradient(circle,var(--ambient-green),transparent 70%);
+  filter:blur(40px);opacity:.8;
+}
+.svg-sprite{position:absolute!important;width:0;height:0;overflow:hidden;pointer-events:none}
+.icon{
+  width:19px;height:19px;display:inline-block;flex:0 0 auto;vertical-align:middle;
+  stroke:currentColor;fill:none;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round;
+}
+button,.card,.surface,.floor-table{ -webkit-tap-highlight-color:transparent; }
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:3px solid var(--focus)!important;outline-offset:3px!important;
+}
+.skip-link{
+  position:fixed;top:-100px;left:14px;background:var(--ink);color:var(--paper);
+  z-index:100;border-radius:12px;padding:12px 17px;font-weight:800;
+}
+.skip-link:focus{top:13px}
+
+/* Desktop layout — spacious, compact icon-rail and fully hidden. */
+.app-shell{
+  grid-template-columns:242px minmax(0,1fr);
+  transition:grid-template-columns .3s cubic-bezier(.2,.8,.2,1);
+  min-height:100vh;
+}
+.app-shell > .main-column{grid-column:2;min-width:0}
+.side{
+  background:
+    radial-gradient(ellipse 140% 58% at -20% 2%,rgba(131,174,132,.14),transparent 75%),
+    linear-gradient(170deg,rgba(26,67,50,.98),rgba(16,47,36,.98) 72%,rgba(14,40,32,.99));
+  border-right:1px solid rgba(215,235,217,.09);
+  box-shadow:inset -1px 0 0 #fff1;
+  padding:23px 15px 23px;gap:0;
+  overflow-x:hidden;
+  overflow-y:auto;scrollbar-width:thin;scrollbar-color:#668c7255 transparent;
+  transition:width .3s ease,transform .3s ease,opacity .2s ease;
+}
+.side::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,#f6dfb34d,transparent);
+}
+.side-top{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:53px;margin:0 2px}
+.identity{padding:0;min-width:0;gap:11px}
+.brand-symbol{
+  flex:0 0 44px;width:44px;height:44px;border-radius:14px;
+  background:linear-gradient(145deg,#f0c395,#d59162 70%,#c37a4a);
+  color:#214638;box-shadow:0 5px 15px #080f0c32,0 1px 0 #ffe4b7 inset;
+  font-size:28px;
+}
+.brand-copy{min-width:0}
+.brand-copy strong{font:800 20px/1 var(--heading);letter-spacing:-1.2px;color:#fbf5ed}
+.brand-copy span{font-size:8px;letter-spacing:1.8px;color:#c5d4c0}
+.sidebar-compact-toggle{
+  width:32px;height:32px;display:grid;place-items:center;flex:0 0 32px;
+  color:#c8d9c7;background:#ffffff0e;border:1px solid #ffffff1e;border-radius:9px;
+  transition:background .2s ease,color .2s ease;
+}
+.sidebar-compact-toggle .icon{width:17px;height:17px}
+.sidebar-compact-toggle:hover{background:#ffffff1e;color:#fff}
+.side-caption{margin:36px 13px 12px;color:#91ad9c;font:800 9px var(--heading);letter-spacing:2.1px}
+.navigation{display:grid;gap:3px;min-width:0}
+.navigation button{
+  position:relative;display:flex;align-items:center;gap:13px;width:100%;
+  padding:12px 11px;min-height:46px;border-radius:12px;
+  color:#bdd0c1;border:1px solid transparent;background:transparent;
+  font-size:12.5px;font-weight:700;letter-spacing:-.1px;
+  transition:background .2s ease,color .2s ease,border-color .2s ease,transform .2s ease;
+}
+.navigation button .nav-symbol{
+  width:24px;min-width:24px;display:grid;place-items:center;
+  font-size:inherit;line-height:1;
+}
+.navigation button .icon{height:20px;width:20px;stroke-width:1.75}
+.navigation button:hover{background:#d6f0da13;color:#fff;transform:translateX(2px)}
+.navigation button.active{
+  background:linear-gradient(100deg,rgba(240,247,233,.98),rgba(219,234,216,.94));
+  color:#1b4835;border-color:#ffffff88;
+  box-shadow:0 5px 18px #05170b3e,inset 0 1px 0 #fff;
+}
+.navigation button.active:before{
+  content:"";position:absolute;left:-14px;width:3px;height:20px;
+  background:#e2a677;border-radius:0 4px 4px 0;
+}
+.navigation button.active .icon{stroke-width:2.05}
+.navigation .nav-separator{margin:18px 12px 9px;color:#89ac99;font:800 9px var(--heading);letter-spacing:1.8px}
+.side-bottom{
+  flex:0 0 auto;margin-top:32px;padding:17px 13px 10px;
+  border-top:1px solid #ecffe01d;
+}
+.side-status{font-weight:800;font-size:10.5px;letter-spacing:.1px}
+.side-bottom p{color:#a4b9a8;font-size:10.5px;line-height:1.72;margin:13px 0 17px}
+.side-bottom a{display:inline-flex;align-items:center;gap:4px;font-size:10.5px;text-decoration:none}
+.pulse{box-shadow:0 0 0 4px #89d2a514}
+
+/* Rail: maintain icon affordance and tooltips through native title attributes. */
+.app-shell.sidebar-compact{grid-template-columns:80px minmax(0,1fr)}
+.sidebar-compact .side{padding-inline:12px}
+.sidebar-compact .side-top{display:flex;flex-direction:column;gap:12px;align-items:center;margin-bottom:14px}
+.sidebar-compact .identity{justify-content:center}
+.sidebar-compact .brand-copy,.sidebar-compact .nav-text,
+.sidebar-compact .side-caption,.sidebar-compact .nav-separator,
+.sidebar-compact .side-bottom{display:none}
+.sidebar-compact .navigation{gap:5px}
+.sidebar-compact .navigation button{justify-content:center;padding:12px 0;min-height:48px}
+.sidebar-compact .navigation button .nav-symbol{min-width:24px}
+.sidebar-compact .navigation button:hover{transform:none}
+.sidebar-compact .navigation button.active:before{left:-12px;height:19px}
+.sidebar-compact .sidebar-compact-toggle .icon{transform:rotate(180deg)}
+.sidebar-hidden{grid-template-columns:0 minmax(0,1fr)}
+.sidebar-hidden .side{
+  width:242px;position:fixed;top:0;left:0;transform:translateX(-108%);
+  opacity:0;visibility:hidden;pointer-events:none;
+}
+.sidebar-scrim{position:fixed;inset:0;z-index:45;background:#061b12a8;backdrop-filter:blur(3px);border:0}
+
+/* Light glass topbar, stable as pages change. */
+.topbar{
+  position:sticky;top:0;z-index:21;margin:0;min-height:79px;
+  padding:0 clamp(19px,3vw,54px);
+  background:var(--glass);
+  border-bottom:1px solid var(--glass-edge);
+  box-shadow:0 1px 0 var(--line),0 5px 26px #122b1d07;
+  backdrop-filter:blur(22px) saturate(138%);
+  -webkit-backdrop-filter:blur(22px) saturate(138%);
+}
+.topbar-leading{display:flex;align-items:center;gap:22px;min-width:0}
+.breadcrumbs{letter-spacing:1.55px;font-size:9.5px}
+.breadcrumbs strong{color:var(--ink)}
+.topbar-actions{gap:10px}
+.source-indicator{display:flex;align-items:center;gap:0;color:var(--ink-sub);font-size:10px;letter-spacing:.2px;font-weight:800;background:var(--tint);border:1px solid var(--line);border-radius:99px;padding:8px 11px}
+.source-indicator:before{display:none}
+.mode-control{
+  background:rgba(122,151,125,.095);
+  border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px;
+}
+.mode-control button{min-height:33px;padding:9px 12px;font-size:10.5px}
+.mode-control button.active{background:var(--glass-solid);box-shadow:0 2px 8px #284e2c16;border:1px solid var(--glass-edge)}
+.icon-button{
+  flex:0 0 36px;width:36px;height:36px;min-width:36px;
+  background:var(--glass);border:1px solid var(--line);
+  border-radius:11px;color:var(--ink-sub);
+  transition:background .18s ease,transform .18s ease,color .18s ease,border-color .18s ease;
+}
+.icon-button .icon{width:17px;height:17px}
+.icon-button:hover{background:var(--tint);color:var(--ink);border-color:#b5cbb7;transform:translateY(-1px)}
+.menu-toggle{width:39px;height:39px;flex-basis:39px}
+.menu-toggle .icon{width:19px;height:19px}
+
+/* Editorial hero on everyday operational pages. */
+.work-area{padding:38px clamp(19px,3vw,54px) 25px;max-width:1840px}
+.section-intro{margin-bottom:29px;align-items:center;gap:20px}
+.section-intro h1{
+  font:800 clamp(29px,3.1vw,42px)/1.18 var(--heading);
+  letter-spacing:-1.75px;margin:10px 0 11px;
+  text-wrap:balance;
+}
+.view[data-view="inicio"] .section-intro h1,
+.view[data-view="reservas"] .section-intro h1,
+.view[data-view="salon"] .section-intro h1{
+  font-family:var(--serif);font-size:clamp(37px,4.15vw,57px);
+  font-weight:700;line-height:1.06;letter-spacing:-1.3px;
+}
+.overline{color:var(--accent);font-size:10px;letter-spacing:2.05px}
+.subhead{font-size:13.5px;line-height:1.72;color:var(--ink-sub)}
+.view[data-view="inicio"] .section-intro{
+  position:relative;isolation:isolate;
+  background:linear-gradient(118deg,rgba(250,251,244,.82),rgba(235,243,232,.62) 65%,rgba(236,212,190,.52));
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--shadow),inset 0 1px 0 #fff9;
+  padding:27px 29px;border-radius:23px;
+  margin-bottom:18px;min-height:205px;
+  overflow:hidden;
+}
+.dark .view[data-view="inicio"] .section-intro{
+  background:linear-gradient(120deg,rgba(40,67,49,.85),rgba(27,51,41,.89),rgba(95,65,43,.35));
+  box-shadow:var(--shadow);
+}
+.view[data-view="inicio"] .section-intro:before{
+  content:"✳";position:absolute;z-index:-1;right:9%;top:-82px;
+  font-family:Georgia,serif;font-size:310px;line-height:1;
+  color:var(--accent);opacity:.09;pointer-events:none;
+}
+.view[data-view="inicio"] .section-intro:after{
+  content:"";position:absolute;z-index:-1;right:-75px;bottom:-240px;
+  width:470px;height:470px;border:1px solid var(--accent);opacity:.1;border-radius:50%;
+}
+.view[data-view="inicio"] .section-intro .subhead{max-width:560px}
+.view[data-view="inicio"] .section-intro>.primary-btn{flex-shrink:0}
+
+/* Materiality: a restrained translucent surface, no distracting frosted layers on dense data. */
+.surface,.room-card,.native-block,.metric,
+.reservation-card,.order-card,.cash-card,.catalog-card,
+.toolbar{
+  background:var(--glass);
+  border:1px solid var(--glass-edge);
+  box-shadow:var(--shadow);
+  backdrop-filter:blur(15px) saturate(120%);
+  -webkit-backdrop-filter:blur(15px) saturate(120%);
+}
+.surface,.room-card,.native-block{border-radius:21px}
+.surface{padding:24px}
+.metric{border-radius:17px;position:relative;overflow:hidden;min-height:139px}
+.metric:before{
+  content:"";position:absolute;left:0;top:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--copper),transparent);opacity:.39;
+}
+.metric strong{font-size:30px;letter-spacing:-1.1px;margin:17px 0 8px}
+.metric .metric-icon{
+  position:absolute;top:15px;right:15px;border:1px solid var(--line);background:var(--tint);
+  border-radius:10px;width:32px;height:32px;display:grid;place-items:center;color:var(--ink-sub)
+}
+.metric .metric-icon .icon{width:16px;height:16px}
+.metric span{max-width:78%;font-size:11.5px}
+.metric small{max-width:94%;font-size:10.5px}
+.surface-heading h2,.native-block h2{font-weight:800;font-size:16px;letter-spacing:-.55px}
+.view .surface{transition:border-color .2s ease,box-shadow .25s ease}
+.surface:hover{border-color:var(--line);box-shadow:0 21px 54px #193b2c0c}
+.primary-btn,.secondary-btn,.quiet-btn{border-radius:11px;min-height:39px;transition:background .18s ease,transform .18s ease,box-shadow .18s ease}
+.primary-btn{background:linear-gradient(125deg,#214d3b,#153d2d);color:#fff;box-shadow:0 5px 14px #1037241c}
+.dark .primary-btn{background:linear-gradient(125deg,#e1a172,#ba774a);color:#1a2b21}
+.section-intro>.primary-btn{background:linear-gradient(125deg,#d68d5c,#b96742);color:white}
+.primary-btn:hover:not(:disabled){box-shadow:0 9px 24px #19433126}
+.secondary-btn{background:var(--glass);border-color:var(--line)}
+.micro-btn{border-radius:9px;padding:9px 12px;transition:background .18s ease,transform .18s ease}
+.micro-btn:hover{transform:translateY(-1px)}
+.micro-btn.accent{background:var(--ink);color:var(--paper)}
+.view .toolbar{padding:13px 16px;border-radius:15px}
+.pill{letter-spacing:.1px}
+.activity-row{padding:14px 0}
+.empty{background:var(--tint);border:1px dashed var(--line)}
+.view .reservation-card,.view .order-card,.view .cash-card,.view .catalog-card{
+  border-radius:19px;padding:22px;
+  transition:box-shadow .2s ease,border-color .2s ease,transform .2s ease;
+}
+.view .reservation-card:hover,.view .order-card:hover,.view .cash-card:hover,.view .catalog-card:hover{
+  box-shadow:0 18px 46px #1a473019;transform:translateY(-2px);border-color:var(--line)
+}
+.reservation-card .reservation-time{font-size:30px;color:var(--accent)}
+.reservation-card h3{font-size:14px}
+.card-footer{gap:6px}
+
+/* Plan: make objects legible and distinguish operational status. */
+.room-layout{grid-template-columns:minmax(0,1fr) 342px;gap:16px;align-items:start}
+.room-card{overflow:hidden;background:var(--glass)}
+.room-card-head{height:60px;background:var(--glass-solid)}
+.room-dot{background:#7eb294;box-shadow:0 0 0 4px #72ac8c1c}
+.floor-viewport{
+  height:clamp(420px,59vh,670px);background:#e9f0e5;
+  border-top:1px solid #cfdfcfaa;border-bottom:1px solid #cfdfcfaa;
+  scrollbar-color:#93aa9888 transparent
+}
+.dark .floor-viewport{background:#263c30;border-color:#46674a55}
+.floor-surface{
+  background:
+    linear-gradient(90deg,rgba(94,132,91,.075) 1px,transparent 1px),
+    linear-gradient(rgba(94,132,91,.075) 1px,transparent 1px),
+    radial-gradient(ellipse at 31% 35%,#f6f7ee,#e9efe6 84%);
+  background-size:28px 28px,28px 28px,100% 100%;
+}
+.dark .floor-surface{
+  background:
+    linear-gradient(90deg,#9cb69c12 1px,transparent 1px),
+    linear-gradient(#9cb69c12 1px,transparent 1px),
+    radial-gradient(ellipse at 31% 35%,#314b3a,#263b30);
+  background-size:28px 28px,28px 28px,100% 100%;
+}
+.floor-table{
+  background:linear-gradient(145deg,#fffefc,#f3f8f0);
+  border:1.5px solid #b4d0b6;border-radius:16px;
+  box-shadow:0 5px 0 #91ae985c,0 13px 20px #1b4a2d16;
+  transition:box-shadow .18s ease,border-color .16s ease,filter .18s ease;
+}
+.floor-table:hover{z-index:4;filter:brightness(1.02);box-shadow:0 6px 0 #91ae985c,0 15px 24px #1b4a2d2b}
+.floor-table strong{font-size:14px}
+.floor-table small{font-size:9.8px;letter-spacing:.1px}
+.floor-table.selected{
+  outline:3px solid var(--copper);outline-offset:4px;
+  box-shadow:0 0 0 8px #d09b6824,0 14px 29px #1a402b27;z-index:6
+}
+.floor-table.reserved{background:linear-gradient(145deg,#f7f6ff,#e8ecff)}
+.floor-table.serving{background:linear-gradient(145deg,#fff9f0,#ffe9d4)}
+.floor-table.kitchen{background:linear-gradient(145deg,#f1f7ff,#e2ebff)}
+.floor-table.billing{background:linear-gradient(145deg,#fff4f6,#f7dfe8)}
+.floor-table.editable{outline-offset:2px}
+.floor-architecture{font-size:10px}
+.floor-bottom{background:var(--glass-solid)}
+.table-inspector{
+  position:sticky;top:98px;max-height:calc(100dvh - 126px);
+  background:var(--glass-solid);box-shadow:var(--shadow);padding:26px;
+}
+.inspector-name{font-size:24px}
+.inspector-rows{margin:16px 0}
+.inspector-row{padding:12px 0}
+.inspector-actions .primary-btn{min-height:45px}
+.edit-toolbar{background:var(--glass-solid)}
+
+/* Workflow lanes and touch feedback. */
+.kitchen-lane{background:var(--glass);backdrop-filter:blur(12px);border-color:var(--glass-edge);border-radius:18px}
+.kitchen-lane:nth-child(1){border-top:3px solid #d99b6b}
+.kitchen-lane:nth-child(2){border-top:3px solid #7a9dc7}
+.kitchen-lane:nth-child(3){border-top:3px solid #82af8b}
+.kitchen-ticket{box-shadow:var(--shadow);border-radius:13px;background:var(--glass-solid)}
+.journey>div span{background:var(--tint);border:1px solid var(--line);color:var(--accent)}
+.status-tabs button.active{box-shadow:0 4px 15px #1f432a1e}
+.toast{background:linear-gradient(125deg,#24543d,#153c2f);border:1px solid #ffffff44;backdrop-filter:blur(18px);border-radius:12px}
+.modal-overlay{backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);background:#071c14a0}
+.modal{
+  background:var(--glass-solid);border:1px solid var(--glass-edge);
+  box-shadow:0 38px 85px #071d1b75,inset 0 1px 0 var(--glass-edge);
+  border-radius:23px;padding:28px;backdrop-filter:blur(24px)
+}
+.modal-top h2{font:700 31px/1.12 var(--serif);letter-spacing:-.5px}
+.modal-field input,.modal-field select,.modal-field textarea{border-color:var(--line);background:var(--paper)}
+.footer{border-color:var(--line)}
+@media(max-width:1420px){.room-layout{grid-template-columns:minmax(0,1fr) 308px}.section-intro h1{font-size:34px}}
+@media(max-width:1130px){
+  .app-shell{grid-template-columns:205px minmax(0,1fr)}
+  .app-shell.sidebar-compact{grid-template-columns:75px minmax(0,1fr)}
+  .room-layout{grid-template-columns:1fr}
+  .table-inspector{position:static;max-height:none}
+  .topbar-actions{gap:7px}
+  .source-indicator{display:none}
+}
+/* Preserve the inspector beside the plan on desktop-sized viewports. */
+@media(min-width:970px) and (max-width:1130px){
+  .room-layout{grid-template-columns:minmax(0,1fr) 268px}
+  .table-inspector{position:sticky;top:98px;max-height:calc(100dvh - 126px)}
+}
+/* On touch/mobile, the sidebar is an overlay, never a squeezed icon rail. */
+@media(max-width:760px){
+  body.navigation-open{overflow:hidden}
+  .app-shell,.app-shell.sidebar-hidden,.app-shell.sidebar-compact{display:block;grid-template-columns:1fr}
+  .app-shell > .main-column{grid-column:auto}
+  .side,.app-shell.sidebar-hidden .side,.app-shell.sidebar-compact .side{
+    width:min(310px,86vw);height:100dvh;position:fixed;left:0;top:0;z-index:52;
+    transform:translateX(-110%);opacity:1;visibility:visible;pointer-events:auto;
+    padding:23px 17px 20px;box-shadow:16px 0 60px #0b20175c;
+  }
+  .app-shell.mobile-sidebar-open .side,
+  .app-shell.sidebar-hidden.mobile-sidebar-open .side,
+  .app-shell.sidebar-compact.mobile-sidebar-open .side{transform:translateX(0)}
+  .app-shell.sidebar-compact .side-top,.side-top{display:flex;flex-direction:row;margin-bottom:10px}
+  .app-shell.sidebar-compact .brand-copy,.app-shell.sidebar-compact .nav-text,
+  .app-shell.sidebar-compact .side-caption,.app-shell.sidebar-compact .nav-separator,
+  .app-shell.sidebar-compact .side-bottom{display:block}
+  .app-shell.sidebar-compact .navigation,.navigation{display:grid;overflow:visible}
+  .app-shell.sidebar-compact .navigation button,.navigation button{
+    justify-content:flex-start;padding:11px 12px;width:100%;min-height:43px
+  }
+  .app-shell.sidebar-compact .navigation button.active:before{left:-16px}
+  .side-caption{margin:22px 12px 11px}
+  .navigation{gap:2px}
+  .navigation button{border-radius:10px}
+  .navigation .nav-separator{margin:11px 12px 5px}
+  .side-bottom{margin-top:22px}
+  .topbar{min-height:65px;margin:0;padding:10px 16px;gap:10px}
+  .topbar-leading{gap:9px;flex:0 0 auto}
+  .topbar-actions{flex:1;justify-content:flex-end;gap:6px}
+  .mode-control button{font-size:10px;padding:8px 7px}
+  .icon-button{width:35px;height:35px;min-width:35px;flex-basis:35px}
+  .work-area{padding:24px 15px}
+  .view[data-view="inicio"] .section-intro{padding:25px 20px;min-height:0}
+  .view[data-view="inicio"] .section-intro:before{right:-17%;font-size:230px;top:-40px}
+  .view[data-view="inicio"] .section-intro h1,
+  .view[data-view="reservas"] .section-intro h1,
+  .view[data-view="salon"] .section-intro h1{font-size:39px}
+  .section-intro{align-items:flex-start}
+  .metric{min-height:123px;padding:16px}
+  .metric strong{font-size:24px}
+  .metric .metric-icon{width:28px;height:28px}
+  .metric .metric-icon .icon{width:14px;height:14px}
+  .floor-viewport{height:490px}
+  .room-card-head{padding:0 12px}
+  .table-inspector{padding:23px}
+  .modal{padding:22px}
+}
+@media(max-width:380px){
+  .mode-control button{font-size:9px;padding:8px 6px}
+  .topbar-actions{gap:4px}
+  .breadcrumbs{display:none}
+  .view[data-view="inicio"] .section-intro h1,
+  .view[data-view="reservas"] .section-intro h1,
+  .view[data-view="salon"] .section-intro h1{font-size:35px}
+}
+@media(prefers-reduced-motion:reduce){
+  *,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
+}
+@supports not ((backdrop-filter:blur(5px)) or (-webkit-backdrop-filter:blur(5px))){
+  .topbar,.surface,.metric,.reservation-card,.order-card,.cash-card,.catalog-card,.room-card,.toolbar,.modal{background:var(--glass-solid)}
+}
