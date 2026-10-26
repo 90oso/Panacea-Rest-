@@ -1,5 +1,9 @@
 # 09 — Hoja de ruta y criterios de aceptación
 
+> [!IMPORTANT]
+> **Documento de referencia del MVP heredado.** La dirección aprobada para el siguiente desarrollo es **Panacea Core independiente**, sin TastyIgniter en runtime. No implementar nuevas integraciones nativas como destino final. Priorizar [ADR-001](architecture/ADR_001_CORE_INDEPENDIENTE.md) y el [plan standalone](architecture/PLAN_MIGRACION_CORE.md).
+
+
 **Corte:** 2026-10-26. Esta hoja de ruta describe el trabajo restante; **no es un calendario comprometido** ni supone acceso a producción.
 
 ## Nivel de madurez
