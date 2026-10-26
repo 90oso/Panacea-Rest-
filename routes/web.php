@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 // Local development operations studio. Real operations are not production endpoints.
 Route::get('/panacea-preview', [\App\Http\Controllers\Panacea\StudioController::class, 'index'])->name('panacea.preview');
 Route::get('/panacea-preview/state', [\App\Http\Controllers\Panacea\StudioController::class, 'state'])->name('panacea.studio.state');
+Route::get('/panacea-preview/health', [\App\Http\Controllers\Panacea\StudioController::class, 'health'])->name('panacea.studio.health');
 Route::post('/panacea-preview/action', [\App\Http\Controllers\Panacea\StudioController::class, 'action'])->name('panacea.studio.action');
 
 Route::get('/panacea-operations', fn () => redirect('/admin'))->name('panacea.operations');
