@@ -242,6 +242,7 @@
     }
     const session=openSession(d,t.id),status=stageStatus(d,t.id),bookings=activeReservations(d,t.id).sort((a,b)=>String(a.reserved_at).localeCompare(String(b.reserved_at)));
     const orders=session?pendingOrders(d,session.id):[],balance=session?sessionBalance(d,session.id):null;
+    const nativeBookingLinks=source==='real'?(d.native_links||[]).filter(r=>Number(r.dining_table_id)===Number(t.id)):[];
     $('tableInspector').innerHTML='<div class="inspector-head"><p class="overline">MESA #'+t.id+'</p>'+pill(status.label)+'</div><h2 class="inspector-name">'+esc(t.name)+'</h2><p class="inspector-desc">'+t.min_capacity+'–'+t.capacity+' personas · '+(t.shape==='round'?'Redonda':'Rectangular')+'</p><div class="inspector-rows"><div class="inspector-row"><span>Servicio Panacea</span><strong>'+esc(session?.guest_name||'Sin servicio abierto')+'</strong></div><div class="inspector-row"><span>Comandas</span><strong>'+orders.length+'</strong></div><div class="inspector-row"><span>Saldo pendiente</span><strong>'+(session?money(balance.due):'—')+'</strong></div><div class="inspector-row"><span>Reservas confirmadas</span><strong>'+bookings.length+'</strong></div></div>'+(bookings.length?'<div class="small-note">Próxima: '+fmtDate(bookings[0].reserved_at)+' · '+esc(bookings[0].guest_name)+'</div>':'')+'<div class="inspector-actions">'+(session?'<button class="primary-btn" data-command="new-order" data-session="'+session.id+'">+ Tomar pedido</button><button class="secondary-btn" data-command="pay-session" data-session="'+session.id+'">Ver cobro ↗</button><button class="secondary-btn" data-close-session="'+session.id+'">Finalizar servicio</button>':'<button class="primary-btn" data-command="new-seat" data-table="'+t.id+'">+ Iniciar servicio</button>')+'<button class="secondary-btn" data-command="new-reservation" data-table="'+t.id+'">+ Reservar esta mesa</button></div>';
   }
   function renderOrders(){
@@ -405,11 +406,12 @@
   }
   function reserveModal(tableId=null){
     const d=current();if(!d.tables.length)return notify('No hay mesas configuradas',true);
+    const selected=d.tables.find(t=>t.id===Number(tableId))||d.tables[0];
     const at=new Date(Date.now()+2*3600000);at.setMinutes(Math.ceil(at.getMinutes()/15)*15,0,0);
     showModal('AGENDA · NUEVA RESERVA','Preparar una llegada',
       '<label class="modal-field">Mesa<select name="table_id" required>'+tableOptions(d,tableId)+'</select></label>'+
       field('Nombre del cliente','guest_name','text','', 'maxlength="100"')+
-      field('Número de personas','party_size','number',2,'min="1" max="50"')+
+      field('Número de personas','party_size','number',Math.max(Number(selected.min_capacity)||1,Math.min(2,selected.capacity)),'min="1" max="50"')+
       field('Fecha y hora','reserved_at','datetime-local',localDate(at)+'T'+localTime(at))+
       '<label class="modal-field">Observaciones<textarea name="notes" rows="2" maxlength="255"></textarea></label>',
       'reserve','Guardar reserva');
@@ -417,10 +419,11 @@
   function seatModal(tableId,reservationId=null){
     const d=current(),reservation=d.reservations.find(r=>r.id===Number(reservationId));
     const table=reservation?.dining_table_id||tableId;
+    const selected=d.tables.find(t=>t.id===Number(table))||d.tables[0];
     showModal('SALÓN · RECEPCIÓN','Abrir servicio',
       '<label class="modal-field">Mesa<select name="table_id" required>'+tableOptions(d,table)+'</select></label>'+
       field('Nombre del cliente','guest_name','text',reservation?.guest_name||'', 'maxlength="100"')+
-      field('Comensales','party_size','number',reservation?.party_size||2,'min="1" max="50"')+
+      field('Comensales','party_size','number',Math.max(Number(selected?.min_capacity)||1,Math.min(reservation?.party_size||2,selected?.capacity||50)),'min="1" max="50"')+
       '<input type="hidden" name="reservation_id" value="'+(reservation?.id||'')+'">'+
       '<p class="small-note">Esto registra un servicio de Panacea, no cambia automáticamente el estado de ocupación nativo de TastyIgniter.</p>',
       'seat','Iniciar servicio');
@@ -598,6 +601,14 @@
     $('floorSurface').addEventListener('pointerup',pointerUp);
     $('floorSurface').addEventListener('pointercancel',pointerUp);
     $('modalForm').addEventListener('submit',submitModal);
+    $('modalFields').addEventListener('change',e=>{
+      if(e.target.name!=='table_id')return;
+      const table=current()?.tables.find(t=>t.id===Number(e.target.value));
+      const party=$('modalForm').querySelector('[name="party_size"]');
+      if(!table||!party)return;
+      party.min=Number(table.min_capacity)||1;party.max=Number(table.capacity)||50;
+      party.value=Math.max(Number(party.min),Math.min(Number(party.value)||Number(party.min),Number(party.max)));
+    });
     $('closeModal').addEventListener('click',hideModal);
     $('cancelModal').addEventListener('click',hideModal);
     $('modalOverlay').addEventListener('click',e=>{if(e.target===$('modalOverlay'))hideModal();});
