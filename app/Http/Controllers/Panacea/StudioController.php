@@ -12,6 +12,7 @@ use Illuminate\Validation\ValidationException;
 use Igniter\Reservation\Models\DiningArea;
 use Igniter\Reservation\Models\DiningTable;
 use App\Services\Panacea\Operations;
+use App\Services\Panacea\MenuPresentation;
 
 class StudioController extends Controller
 {
@@ -98,10 +99,18 @@ class StudioController extends Controller
         if (Schema::hasTable('menus')) {
             $cols = Schema::getColumnListing('menus');
             if (count(array_intersect(['menu_id','menu_name','menu_price'], $cols)) === 3) {
-                $menus = DB::table('menus')->select('menu_id', 'menu_name', 'menu_price')
+                $selection = ['menu_id', 'menu_name', 'menu_price'];
+                if (in_array('menu_description', $cols, true)) $selection[] = 'menu_description';
+
+                $entries = DB::table('menus')->select($selection)
                     ->orderBy('menu_name')->limit(120)->get()
-                    ->map(fn ($m) => ['id' => (int) $m->menu_id, 'name' => (string) $m->menu_name,
-                        'price' => (float) $m->menu_price]);
+                    ->map(fn ($m) => [
+                        'id' => (int) $m->menu_id,
+                        'name' => (string) $m->menu_name,
+                        'price' => (float) $m->menu_price,
+                        'description' => trim(mb_substr(strip_tags((string) ($m->menu_description ?? '')), 0, 175)),
+                    ])->values()->all();
+                $menus = MenuPresentation::withPhotos($entries);
             }
         }
 
