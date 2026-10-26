@@ -194,7 +194,10 @@ class StudioController extends Controller
                     ->where('dining_table_id', $table->id)->where('status', 'confirmed')
                     ->where('reserved_at', '>', $start->copy()->subMinutes(90))
                     ->where('reserved_at', '<', $start->copy()->addMinutes(90))->exists();
-                if ($conflicts || Operations::hasPanaceaConflict((int) $table->id, $start)
+                $nearOpenService = $start->lt(Carbon::now('America/Panama')->addMinutes(90))
+                    && DB::table('panacea_service_sessions')->where('dining_table_id', $table->id)
+                        ->where('status', 'open')->exists();
+                if ($nearOpenService || $conflicts || Operations::hasPanaceaConflict((int) $table->id, $start)
                     || Operations::hasNativeReservationConflict((int) $table->id, $start)) {
                     $this->fail('La mesa tiene otra reserva o un vínculo nativo en ese horario.');
                 }
@@ -212,7 +215,13 @@ class StudioController extends Controller
                 if ($reservation->status !== 'pending') $this->fail('Solo se confirman solicitudes pendientes.');
                 $table = $this->lockTable((int) $reservation->dining_table_id);
                 $start = Carbon::parse($reservation->reserved_at, 'America/Panama');
-                if (Operations::hasPanaceaConflict((int) $table->id, $start, (int) $reservation->id)
+                if ($start->lt(Carbon::now('America/Panama')->subMinutes(30))) {
+                    $this->fail('La solicitud ya pasó su horario; crea una nueva para confirmar.');
+                }
+                $openNearby = $start->lt(Carbon::now('America/Panama')->addMinutes(90))
+                    && DB::table('panacea_service_sessions')->where('dining_table_id', $table->id)
+                        ->where('status', 'open')->exists();
+                if ($openNearby || Operations::hasPanaceaConflict((int) $table->id, $start, (int) $reservation->id)
                     || Operations::hasNativeReservationConflict((int) $table->id, $start)) {
                     $this->fail('La solicitud coincide con otra reserva.');
                 }
