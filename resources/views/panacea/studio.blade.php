@@ -24,7 +24,9 @@
   <link rel="stylesheet" href="{{ asset('panacea/studio-night.css') }}?v=1">
   <script defer src="{{ asset('panacea/menu-imagery.js') }}?v=1"></script>
   <script defer src="{{ asset('panacea/studio.js') }}?v=7"></script>
+  <link rel="stylesheet" href="{{ asset('panacea/studio-tour.css') }}?v=1">
   <script defer src="{{ asset('panacea/studio-shell.js') }}?v=4"></script>
+  <script defer src="{{ asset('panacea/studio-tour.js') }}?v=1"></script>
 </head>
 <body>
 <a class="skip-link" href="#mainContent">Saltar al contenido</a>
@@ -94,6 +96,7 @@
           <button type="button" id="demoMode" aria-pressed="false">Demostración</button>
         </div>
         <button type="button" class="icon-button" id="reload" title="Actualizar desde la base de datos" aria-label="Actualizar datos"><svg class="icon" aria-hidden="true"><use href="#ic-refresh"></use></svg></button>
+        <button type="button" id="tourLaunch" class="tour-launcher" aria-label="Iniciar recorrido guiado de Panacea" aria-haspopup="dialog" aria-controls="tourOverlay" aria-expanded="false" title="Guía de la demo · Recorrido interactivo"><svg class="icon" aria-hidden="true"><use href="#ic-sparkles"></use></svg></button>
         <button type="button" class="icon-button" id="themeSwitch" title="Cambiar apariencia" aria-label="Cambiar apariencia" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#ic-moon"></use></svg></button>
       </div>
     </header>
@@ -183,6 +186,49 @@
     <div class="modal-top"><div><p class="overline" id="modalEyebrow">OPERACIÓN</p><h2 id="modalTitle">Nueva acción</h2></div><button id="closeModal" class="icon-button" aria-label="Cerrar">×</button></div>
     <form id="modalForm"><div id="modalFields"></div><div id="modalError" class="form-error" role="alert" hidden></div><div class="modal-actions"><button type="button" class="secondary-btn" id="cancelModal">Cancelar</button><button type="submit" id="modalSubmit" class="primary-btn">Confirmar</button></div></form>
   </div>
+</div>
+<div id="tourOverlay" class="tour-overlay" hidden aria-hidden="true">
+  <div id="tourShield" class="tour-shield" aria-hidden="true"></div>
+  <div class="tour-dimmer" id="tourDimTop" aria-hidden="true"></div>
+  <div class="tour-dimmer" id="tourDimLeft" aria-hidden="true"></div>
+  <div class="tour-dimmer" id="tourDimRight" aria-hidden="true"></div>
+  <div class="tour-dimmer" id="tourDimBottom" aria-hidden="true"></div>
+  <div id="tourSpotlight" class="tour-spotlight" aria-hidden="true"></div>
+  <section id="tourDialog" class="tour-dialog" role="dialog" aria-modal="true" aria-labelledby="tourTitle" aria-describedby="tourDescription" tabindex="-1">
+    <header class="tour-dialog-top">
+      <div class="tour-guide-sign"><span class="tour-guide-emblem" aria-hidden="true">✳</span><span>GUÍA INTERACTIVA <small>EXPERIENCIA PANACEA</small></span></div>
+      <div class="tour-top-actions">
+        <button type="button" id="tourAutoplay" class="tour-mini-control" aria-label="Activar avance automático" aria-pressed="false" title="Avance automático cada 9 segundos" hidden>▶</button>
+        <button type="button" id="tourClose" class="tour-mini-control" aria-label="Cerrar recorrido guiado" title="Cerrar recorrido">×</button>
+      </div>
+    </header>
+    <div class="tour-content">
+      <div class="tour-meta"><span id="tourChapter">BIENVENIDA</span><span id="tourCounter">PRESENTACIÓN</span></div>
+      <h2 id="tourTitle">Bienvenido a Panacea</h2>
+      <p id="tourDescription">Descubre cómo funciona el restaurante.</p>
+      <div id="tourChooser" class="tour-chooser" hidden>
+        <button type="button" data-tour-length="quick" class="tour-choose-button">
+          <span class="tour-choice-icon" aria-hidden="true">↗</span>
+          <span><strong>Ruta exprés</strong><small>Lo esencial · ideal para grabar</small></span>
+          <span aria-hidden="true">→</span>
+        </button>
+        <button type="button" data-tour-length="full" class="tour-choose-button">
+          <span class="tour-choice-icon" aria-hidden="true">✳</span>
+          <span><strong>Recorrido completo</strong><small>Todos los módulos, paso a paso</small></span>
+          <span aria-hidden="true">→</span>
+        </button>
+      </div>
+      <div class="tour-progress" id="tourProgressWrap" hidden>
+        <div class="tour-progress-track" aria-hidden="true"><span id="tourProgress"></span></div>
+        <span id="tourProgressText" class="tour-progress-text">0%</span>
+      </div>
+      <div class="tour-controls" id="tourControls" hidden>
+        <button type="button" class="tour-back" id="tourBack">← Atrás</button>
+        <button type="button" class="tour-forward" id="tourNext">Siguiente <span aria-hidden="true">→</span></button>
+      </div>
+      <p class="tour-keyboard-hint" id="tourHint">Sin modificar reservas, pedidos ni pagos.</p>
+    </div>
+  </section>
 </div>
 </body>
 </html>
