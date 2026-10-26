@@ -221,7 +221,7 @@
     const w=window.innerWidth,h=window.innerHeight;
     const card=elements.dialog.getBoundingClientRect();
     elements.dialog.style.left=Math.round((w-card.width)/2)+'px';
-    elements.dialog.style.top=Math.round(clamp((h-card.height)/2,10,h-card.height-10))+'px';
+    elements.dialog.style.top=Math.round(clamp((h-card.height)/2,10,Math.max(10,h-card.height-10)))+'px';
   }
   function elementFor(step){
     if(!step || step.center)return null;
