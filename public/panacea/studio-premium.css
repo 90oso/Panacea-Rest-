@@ -92,6 +92,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   transition:grid-template-columns .3s cubic-bezier(.2,.8,.2,1);
   min-height:100vh;
 }
+.app-shell > .main-column{grid-column:2;min-width:0}
 .side{
   background:
     radial-gradient(ellipse 140% 58% at -20% 2%,rgba(131,174,132,.14),transparent 75%),
@@ -389,10 +390,16 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,te
   .topbar-actions{gap:7px}
   .source-indicator{display:none}
 }
+/* Preserve the inspector beside the plan on desktop-sized viewports. */
+@media(min-width:970px) and (max-width:1130px){
+  .room-layout{grid-template-columns:minmax(0,1fr) 268px}
+  .table-inspector{position:sticky;top:98px;max-height:calc(100dvh - 126px)}
+}
 /* On touch/mobile, the sidebar is an overlay, never a squeezed icon rail. */
 @media(max-width:760px){
   body.navigation-open{overflow:hidden}
   .app-shell,.app-shell.sidebar-hidden,.app-shell.sidebar-compact{display:block;grid-template-columns:1fr}
+  .app-shell > .main-column{grid-column:auto}
   .side,.app-shell.sidebar-hidden .side,.app-shell.sidebar-compact .side{
     width:min(310px,86vw);height:100dvh;position:fixed;left:0;top:0;z-index:52;
     transform:translateX(-110%);opacity:1;visibility:visible;pointer-events:auto;
