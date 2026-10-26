@@ -838,5 +838,23 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     setView(view);loadReal();
     setInterval(()=>{if(source==='real'&&!loading&&$('modalOverlay').hidden&&!editDraft)loadReal();},30000);
   }
+  // Minimal, read-only presentation bridge. The tour never calls server mutations.
+  // UI-only navigation/selection is exposed so it works even with a collapsed sidebar.
+  window.PanaceaStudioGuide = Object.freeze({
+    ready: () => Boolean(real && demo),
+    view: () => view,
+    mode: () => source,
+    isEditing: () => Boolean(editDraft),
+    modalOpen: () => !$('modalOverlay').hidden,
+    navigate: name => { if (labels[name]) setView(name); },
+    useDemo: () => { if (real && demo && !editDraft) setMode('demo'); },
+    selectFirstTable: () => {
+      if (!current()?.tables?.length || editDraft) return false;
+      selectedElement = null;
+      selectedTable = Number(current().tables[0].id);
+      if (view === 'salon') renderFloor();
+      return true;
+    }
+  });
   init();
 })();
