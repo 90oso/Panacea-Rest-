@@ -330,9 +330,28 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     const data=current(),term=$('menuSearch').value.trim().toLowerCase();
     const items=data.menus.filter(m=>String(m.name).toLowerCase().includes(term));
     $('menuCount').textContent=items.length+' productos';
-    $('catalogGrid').innerHTML=items.length?items.map(m=>'<article class="catalog-card"><p class="overline">PRODUCTO #'+m.id+'</p><strong>'+esc(m.name)+'</strong><span class="small-note">Precio del catálogo '+(source==='real'?'TastyIgniter':'demostrativo')+'</span><span class="price">'+money(m.price)+'</span></article>').join(''):empty('El catálogo está vacío','No se encontraron productos. En modo real se utiliza exclusivamente el catálogo registrado en TastyIgniter.');
+    const visuals=window.PanaceaMenuVisuals;
+    const generic='https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=920&h=660&q=82';
+    $('catalogGrid').innerHTML=items.length?items.map((m,index)=>{
+      const photo=visuals?.resolve(m)||{
+        src:generic,fallback:generic,badge:'IMAGEN ILUSTRATIVA',
+        alt:'Fotografía gastronómica ilustrativa'
+      };
+      return '<article class="catalog-card" style="--menu-index:'+Math.min(index,10)+'">'+
+        '<div class="catalog-card-media">'+
+          '<img data-menu-photo data-menu-fallback="'+esc(photo.fallback)+'" src="'+esc(photo.src)+'" alt="'+esc(photo.alt)+'" loading="lazy" decoding="async">'+
+          '<span class="catalog-media-badge" data-photo-badge>'+esc(photo.badge)+'</span>'+
+          '<span class="catalog-media-mark" aria-hidden="true">✳</span>'+
+        '</div>'+
+        '<div class="catalog-card-body">'+
+          '<p class="overline">PRODUCTO #'+m.id+'</p>'+
+          '<strong>'+esc(m.name)+'</strong>'+
+          (m.description?'<p class="catalog-card-desc">'+esc(m.description)+'</p>':'')+
+          '<div class="catalog-card-foot"><span class="price">'+money(m.price)+'</span><span class="small-note">'+
+            (source==='real'?'Catálogo TastyIgniter':'Precio demostrativo')+'</span></div>'+
+        '</div></article>';
+    }).join(''):empty('El catálogo está vacío','No se encontraron productos. En modo real se utiliza exclusivamente el catálogo registrado en TastyIgniter.');
   }
-
 
   function currentExtras(){
     const d=current();
