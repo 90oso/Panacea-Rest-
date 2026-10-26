@@ -846,7 +846,16 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     mode: () => source,
     isEditing: () => Boolean(editDraft),
     modalOpen: () => !$('modalOverlay').hidden,
-    navigate: name => { if (labels[name]) setView(name); },
+    navigate: name => {
+      if (!labels[name]) return;
+      setView(name);
+      // Keep screen-reader selection in sync with tour navigation,
+      // which bypasses the regular sidebar click event.
+      document.querySelectorAll('[data-nav]').forEach(button => {
+        if (button.dataset.nav === name) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+    },
     useDemo: () => { if (real && demo && !editDraft) setMode('demo'); },
     selectFirstTable: () => {
       if (!current()?.tables?.length || editDraft) return false;
