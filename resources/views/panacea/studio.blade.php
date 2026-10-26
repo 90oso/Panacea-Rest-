@@ -206,6 +206,7 @@
       <div class="tour-meta"><span id="tourChapter">BIENVENIDA</span><span id="tourCounter">PRESENTACIÓN</span></div>
       <h2 id="tourTitle">Bienvenido a Panacea</h2>
       <p id="tourDescription">Descubre cómo funciona el restaurante.</p>
+      <a id="tourPortalLink" class="tour-portal-link" href="{{ route('panacea.guest.home') }}" target="_blank" rel="noopener noreferrer" hidden>Ver portada del cliente <span aria-hidden="true">↗</span></a>
       <div id="tourChooser" class="tour-chooser" hidden>
         <button type="button" data-tour-length="quick" class="tour-choose-button">
           <span class="tour-choice-icon" aria-hidden="true">↗</span>
