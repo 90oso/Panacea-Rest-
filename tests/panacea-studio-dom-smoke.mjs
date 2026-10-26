@@ -19,6 +19,7 @@ const get=id=>{if(!nodes.has(id))nodes.set(id,new Node(id));return nodes.get(id)
 const document={
   getElementById:get,
   documentElement:new Node('html'),
+  body:new Node('body'),
   listeners:{},
   addEventListener(name,callback){this.listeners[name]=callback;},
   querySelectorAll(){return [];}
