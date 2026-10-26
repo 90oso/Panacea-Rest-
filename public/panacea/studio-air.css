@@ -123,3 +123,28 @@ body{background:radial-gradient(circle at 83% 0%,#f2eade 0%,transparent 30%),rad
 @media(max-width:1050px){.guest-feature{grid-template-columns:1.2fr .8fr}.guest-feature-photo{background-position:60% 50%}}
 @media(max-width:760px){.guest-feature{grid-template-columns:1fr}.guest-feature-copy{padding:26px 22px}.guest-feature-photo{min-height:145px;background-position:center}.guest-feature-photo:before{background:linear-gradient(180deg,#fff8ef 2%,transparent 95%)}.guest-feature h2{font-size:42px}.inventory-actions{gap:6px}.activity-row{gap:7px}}
 @media(prefers-reduced-motion:reduce){.view.active,.metric,.reservation-card,.order-card,.cash-card,.catalog-card,.kitchen-ticket,.activity-row,.surface,.floor-table,.status-tabs button.active,.toast:not([hidden]),.modal-overlay:not([hidden]) .modal,.guest-feature-photo span{animation:none!important;transition:none!important}}
+
+/* Explainable next-action cards */
+.signal-section{margin-top:19px;padding:23px 26px;background:#fffdf9d9}
+.management-brief{padding:23px 25px;margin-bottom:18px;background:#fffdf9d9}
+.signal-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+#managementSignals{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.signal-item{display:flex;align-items:center;gap:13px;background:#faf9f4;border:1px solid #ede7dc;border-radius:13px;padding:16px;min-height:91px;animation:panaceaSignalIn .48s ease both;animation-delay:calc(var(--signal-index,0) * 90ms)}
+.signal-orb{width:35px;height:35px;border-radius:50%;display:grid;place-items:center;flex:0 0 35px;color:#9b7054;font-size:17px;font-weight:800;background:#f3e9df}
+.signal-high .signal-orb{background:#fae6db;color:#b45e3f}
+.signal-medium .signal-orb{background:#f6eddb;color:#a47837}
+.signal-ok .signal-orb{background:#e4f0e3;color:#60885d}
+.signal-info .signal-orb{background:#e7ede6;color:#647f6c}
+.signal-body{min-width:0;flex:1}
+.signal-body strong{font-size:12px;color:#514b43;line-height:1.45}
+.signal-body p{font-size:10.5px;color:#827b6f;line-height:1.5;margin:5px 0 0}
+.signal-item button{flex:0 0 auto}
+@keyframes panaceaSignalIn{from{opacity:0;transform:translateX(-9px)}to{opacity:1;transform:none}}
+.dark .signal-section,.dark .management-brief{background:#24392d}
+.dark .signal-item{background:#283c31;border-color:#526351}
+.dark .signal-body strong{color:#f0f4e9}.dark .signal-body p{color:#adbdac}
+.dark .guest-feature{background:linear-gradient(120deg,#282e29,#3e3b32);border-color:#5f6658}
+.dark .guest-feature h2{color:#eee5d6}.dark .guest-feature-copy p{color:#c2b9aa}
+@media(max-width:1160px){.signal-list,#managementSignals{grid-template-columns:1fr}}
+@media(max-width:760px){.signal-section,.management-brief{padding:18px}.signal-item{align-items:flex-start;flex-wrap:wrap}.signal-item button{margin-left:48px}}
+@media(prefers-reduced-motion:reduce){.signal-item{animation:none!important}}
