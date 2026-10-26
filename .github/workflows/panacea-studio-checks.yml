@@ -33,6 +33,8 @@ jobs:
         run: |
           node --check public/panacea/guest.js
           node --check public/panacea/studio-shell.js
+      - name: Customer portal functional smoke
+        run: node tests/panacea-guest-smoke.mjs
       - name: Unified UI DOM smoke
         run: node tests/panacea-studio-dom-smoke.mjs
       - name: Premium shell navigation and accessibility smoke
