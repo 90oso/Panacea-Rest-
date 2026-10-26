@@ -48,6 +48,7 @@ Route::get('/panacea-preview', function () {
                     'description' => (string) $table['description'],
                     'shape' => (string) $table['shape'],
                     'seatLayout' => $table['seatLayout'] ?? null,
+                    'min_capacity' => (int) ($area->dining_tables()->find($table['id'])?->min_capacity ?? 1),
                 ];
             }
         }
@@ -71,6 +72,11 @@ Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $r
         'positions.*.x' => ['required', 'numeric', 'between:-10000,10000'],
         'positions.*.y' => ['required', 'numeric', 'between:-10000,10000'],
         'positions.*.rotation' => ['required', 'numeric', 'between:-360,360'],
+        'properties' => ['sometimes', 'array', 'max:100'],
+        'properties.*.id' => ['required', 'integer'],
+        'properties.*.name' => ['required', 'string', 'max:80'],
+        'properties.*.capacity' => ['required', 'integer', 'between:1,100'],
+        'properties.*.shape' => ['required', 'in:rectangle,round'],
     ]);
     $positions = collect($input['positions']);
     abort_if($positions->pluck('id')->unique()->count() !== $positions->count(), 422, 'Mesas duplicadas');
@@ -78,6 +84,17 @@ Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $r
         $area = \Igniter\Reservation\Models\DiningArea::query()->lockForUpdate()->findOrFail($input['area_id']);
         $allowed = $area->available_tables->pluck('id')->map(fn ($id) => (int) $id);
         abort_if($positions->pluck('id')->diff($allowed)->isNotEmpty(), 422, 'Mesa ajena al área');
+        $properties = collect($input['properties'] ?? []);
+        abort_if($properties->pluck('id')->unique()->count() !== $properties->count(), 422, 'Propiedades duplicadas');
+        abort_if($properties->pluck('id')->diff($allowed)->isNotEmpty(), 422, 'Mesa ajena al área');
+        foreach ($properties as $property) {
+            $table = $area->dining_tables()->findOrFail($property['id']);
+            abort_if($property['capacity'] < (int) $table->min_capacity, 422, 'Capacidad inferior al mínimo');
+            $table->name = $property['name'];
+            $table->max_capacity = $property['capacity'];
+            $table->shape = $property['shape'];
+            $table->save();
+        }
         foreach ($positions as $position) {
             $table = $area->dining_tables()->findOrFail($position['id']);
             $layout = is_array($table->seat_layout) ? $table->seat_layout : [];
