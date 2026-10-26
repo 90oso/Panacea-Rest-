@@ -40,6 +40,8 @@ jobs:
         run: node tests/panacea-studio-dom-smoke.mjs
       - name: Premium shell navigation and accessibility smoke
         run: node tests/panacea-studio-shell-smoke.mjs
+      - name: Regression for customer route, resilient reads and accessible contrast
+        run: node tests/panacea-regression-guards.mjs
       - name: Required app files present
         run: |
           test -s resources/views/panacea/studio.blade.php
