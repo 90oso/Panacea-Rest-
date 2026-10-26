@@ -5,6 +5,7 @@ namespace App\Services\Panacea;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Igniter\Reservation\Models\DiningTable;
@@ -49,50 +50,75 @@ class Operations
 
     public static function snapshot(): array
     {
-        if (!self::ready()) return ['ready' => false];
+        if (!self::ready()) return ['ready' => false, 'reason' => 'migrations_pending'];
 
-        $ingredients = DB::table('panacea_ingredients as i')
-            ->leftJoin('panacea_stock_movements as m', 'm.ingredient_id', '=', 'i.id')
-            ->groupBy('i.id', 'i.name', 'i.unit', 'i.min_stock', 'i.unit_cost', 'i.active', 'i.created_at', 'i.updated_at')
-            ->select('i.id', 'i.name', 'i.unit', 'i.min_stock', 'i.unit_cost', 'i.active')
-            ->selectRaw('COALESCE(SUM(m.quantity_delta), 0) as stock')
-            ->orderBy('i.name')->limit(250)->get();
+        try {
+            // Avoid aliased joins over custom prefixed tables. Some existing
+            // TastyIgniter installations use a nonempty database prefix.
+            $onHand = DB::table('panacea_stock_movements')
+                ->select('ingredient_id')
+                ->selectRaw('COALESCE(SUM(quantity_delta), 0) as stock')
+                ->groupBy('ingredient_id')->get()->keyBy('ingredient_id');
 
-        $recipes = DB::table('panacea_recipe_lines')
-            ->select('id','menu_id','ingredient_id','quantity')->orderBy('menu_id')->limit(500)->get();
-        $movements = DB::table('panacea_stock_movements')
-            ->orderByDesc('id')->limit(80)
-            ->get(['id','ingredient_id','kind','quantity_delta','unit_cost','order_line_id','created_at']);
-        $customers = DB::table('panacea_guest_profiles')->select([
-            'id','display_name','contact_opt_in','visits_count','last_visit_at'
-        ])->orderByDesc('visits_count')->limit(120)->get();
-        $staff = DB::table('panacea_staff_directory')->select([
-            'id','display_name','role','shift_label','active'
-        ])->orderBy('display_name')->limit(100)->get();
-        $incidents = DB::table('panacea_incidents')->select([
-            'id','title','severity','status','owner_label','dining_table_id','created_at','resolved_at'
-        ])->orderByDesc('id')->limit(150)->get();
-        $audit = DB::table('panacea_audit_events')
-            ->select(['id','action','resource_type','resource_id','occurred_at'])
-            ->orderByDesc('id')->limit(40)->get();
+            $ingredients = DB::table('panacea_ingredients')
+                ->select(['id','name','unit','min_stock','unit_cost','active'])
+                ->orderBy('name')->limit(250)->get()
+                ->map(function ($ingredient) use ($onHand) {
+                    $ingredient->stock = (float) ($onHand->get($ingredient->id)->stock ?? 0);
+                    return $ingredient;
+                });
 
-        $costs = DB::table('panacea_stock_movements')
-            ->where('kind', 'consume')
-            ->selectRaw('COALESCE(SUM(-quantity_delta * unit_cost), 0) as total')
-            ->first();
-        $nonRecipeLines = DB::table('panacea_service_order_lines as l')
-            ->leftJoin('panacea_recipe_lines as r', 'r.menu_id', '=', 'l.menu_id')
-            ->whereNull('r.id')->count();
+            $recipes = DB::table('panacea_recipe_lines')
+                ->select(['id','menu_id','ingredient_id','quantity'])
+                ->orderBy('menu_id')->limit(500)->get();
+            $movements = DB::table('panacea_stock_movements')
+                ->orderByDesc('id')->limit(80)
+                ->get(['id','ingredient_id','kind','quantity_delta','unit_cost','order_line_id','created_at']);
+            $customers = DB::table('panacea_guest_profiles')
+                ->select(['id','display_name','contact_opt_in','visits_count','last_visit_at'])
+                ->orderByDesc('visits_count')->limit(120)->get();
+            $staff = DB::table('panacea_staff_directory')
+                ->select(['id','display_name','role','shift_label','active'])
+                ->orderBy('display_name')->limit(100)->get();
+            $incidents = DB::table('panacea_incidents')
+                ->select(['id','title','severity','status','owner_label','dining_table_id','created_at','resolved_at'])
+                ->orderByDesc('id')->limit(150)->get();
+            $audit = DB::table('panacea_audit_events')
+                ->select(['id','action','resource_type','resource_id','occurred_at'])
+                ->orderByDesc('id')->limit(40)->get();
 
-        return [
-            'ready' => true, 'ingredients' => $ingredients, 'recipes' => $recipes,
-            'movements' => $movements, 'customers' => $customers, 'staff' => $staff,
-            'incidents' => $incidents, 'audit' => $audit,
-            'cost_totals' => [
-                'consumed' => round((float) ($costs->total ?? 0), 2),
-                'uncosted_order_lines' => $nonRecipeLines,
-            ],
-        ];
+            $consumed = DB::table('panacea_stock_movements')
+                ->where('kind', 'consume')
+                ->selectRaw('COALESCE(SUM(-quantity_delta * unit_cost), 0) as total')
+                ->first();
+
+            // No join required: menu IDs missing from the configured recipe list
+            // are counted as not yet costed.
+            $costedMenuIds = DB::table('panacea_recipe_lines')->distinct()
+                ->pluck('menu_id')->all();
+            $uncosted = DB::table('panacea_service_order_lines');
+            if ($costedMenuIds) $uncosted->whereNotIn('menu_id', $costedMenuIds);
+
+            return [
+                'ready' => true, 'ingredients' => $ingredients, 'recipes' => $recipes,
+                'movements' => $movements, 'customers' => $customers, 'staff' => $staff,
+                'incidents' => $incidents, 'audit' => $audit,
+                'cost_totals' => [
+                    'consumed' => round((float) ($consumed->total ?? 0), 2),
+                    'uncosted_order_lines' => $uncosted->count(),
+                ],
+            ];
+        } catch (\Throwable $exception) {
+            // Fail the optional module, not the entire floor/reservations app.
+            // Full details remain available in local Laravel logs.
+            Log::error('Panacea management snapshot failed', [
+                'exception' => $exception,
+            ]);
+            return [
+                'ready' => false, 'reason' => 'query_error',
+                'error' => 'No se pudo leer el módulo de gestión. Revisa storage/logs/laravel.log.',
+            ];
+        }
     }
 
     public static function hasNativeReservationConflict(int $tableId, Carbon $start): bool
