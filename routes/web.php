@@ -38,7 +38,7 @@ Route::get('/panacea-preview', function () {
     try {
         $areas = \Igniter\Reservation\Models\DiningArea::with('available_tables')->get();
         foreach ($areas as $area) {
-            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan)];
+            $room['areas'][] = ['id' => $area->id, 'name' => $area->name, 'has_saved_plan' => !is_null($area->floor_plan), 'elements' => Schema::hasTable('panacea_floor_elements') ? DB::table('panacea_floor_elements')->where('dining_area_id', $area->id)->get(['kind','x','y','width','height','label'])->toArray() : []];
             foreach ($area->getTablesForFloorPlan() as $table) {
                 $room['tables'][] = [
                     'id' => (int) $table['id'],
@@ -77,6 +77,13 @@ Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $r
         'properties.*.name' => ['required', 'string', 'max:80'],
         'properties.*.capacity' => ['required', 'integer', 'between:1,100'],
         'properties.*.shape' => ['required', 'in:rectangle,round'],
+        'elements' => ['sometimes', 'array', 'max:80'],
+        'elements.*.kind' => ['required', 'in:wall,door,window,aisle'],
+        'elements.*.x' => ['required', 'numeric', 'between:0,2000'],
+        'elements.*.y' => ['required', 'numeric', 'between:0,2000'],
+        'elements.*.width' => ['required', 'numeric', 'between:10,2000'],
+        'elements.*.height' => ['required', 'numeric', 'between:10,2000'],
+        'elements.*.label' => ['nullable', 'string', 'max:80'],
     ]);
     $positions = collect($input['positions']);
     abort_if($positions->pluck('id')->unique()->count() !== $positions->count(), 422, 'Mesas duplicadas');
@@ -105,6 +112,13 @@ Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $r
                 'rotation' => (float) $position['rotation'],
             ]);
             $table->save();
+        }
+        if (array_key_exists('elements', $input)) {
+            abort_unless(Schema::hasTable('panacea_floor_elements'), 503, 'Ejecuta las migraciones');
+            DB::table('panacea_floor_elements')->where('dining_area_id', $area->id)->delete();
+            foreach ($input['elements'] as $element) {
+                DB::table('panacea_floor_elements')->insert(array_merge($element, ['dining_area_id' => $area->id, 'created_at' => now(), 'updated_at' => now()]));
+            }
         }
         return response()->json(['ok' => true]);
     });
