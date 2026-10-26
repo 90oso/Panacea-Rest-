@@ -304,6 +304,19 @@
       });
     });
   }
+  function animateCopy(){
+    if(reduce()||typeof elements.title.animate!=='function')return;
+    elements.title.animate([
+      {opacity:.25,transform:'translateY(9px)'},
+      {opacity:1,transform:'translateY(0)'}
+    ],{duration:330,easing:'cubic-bezier(.2,.8,.2,1)'});
+    if(typeof elements.description.animate==='function'){
+      elements.description.animate([
+        {opacity:.3,transform:'translateY(5px)'},
+        {opacity:1,transform:'translateY(0)'}
+      ],{duration:380,easing:'ease-out'});
+    }
+  }
   function focusCurrent(){
     if(state.index<0){
       elements.short.focus();
@@ -320,6 +333,7 @@
     setText(elements.counter,'ELIGE TU AVENTURA');
     setText(elements.title,'Tu restaurante, explicado paso a paso.');
     statusMessage('Recorre Panacea como un tutorial de videojuego: cada pantalla se presenta con un foco visual. La guía activa los datos de demostración y no ejecuta acciones operativas.');
+    animateCopy();
     setHidden(elements.chooser,false);
     setHidden(elements.progressWrap,true);
     setHidden(elements.controls,true);
@@ -361,6 +375,7 @@
     setText(elements.counter,'PASO '+String(state.index+1).padStart(2,'0')+' / '+String(state.steps.length).padStart(2,'0'));
     setText(elements.title,step.title);
     statusMessage(step.copy);
+    animateCopy();
     setHidden(elements.portal,!step.portal);
     elements.back.disabled=false;
     setText(elements.next,final?'Terminar recorrido ↗':'Siguiente →');
