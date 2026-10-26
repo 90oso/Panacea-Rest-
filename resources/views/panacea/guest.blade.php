@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('panacea/guest.css') }}?v=1">
+  <link rel="stylesheet" href="{{ asset('panacea/guest.css') }}?v=2">
   <script>
     window.PANACEA_GUEST = {
       bookingUrl: @json($bookingUrl),
@@ -17,7 +17,8 @@
       items: @json($menuItems)
     };
   </script>
-  <script defer src="{{ asset('panacea/guest.js') }}?v=1"></script>
+  <script defer src="{{ asset('panacea/menu-imagery.js') }}?v=1"></script>
+  <script defer src="{{ asset('panacea/guest.js') }}?v=2"></script>
 </head>
 <body>
   <div class="reading-progress" id="readingProgress" aria-hidden="true"></div>
@@ -71,8 +72,9 @@
         <div><p>Una selección de productos, momentos y propuestas para disfrutar de la mesa a tu manera.</p><span class="menu-note">Los precios se obtienen del catálogo configurado en TastyIgniter.</span></div>
       </div>
       <div class="menu-toolbar section-wrap"><span>SELECCIÓN DE LA CASA</span><label class="menu-search"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input type="search" id="guestMenuSearch" placeholder="Buscar un sabor..." aria-label="Buscar producto"></label></div>
+      <div class="menu-summary section-wrap"><span id="guestMenuCount" aria-live="polite">Productos de la carta</span><span>FOTOGRAFÍA, SABOR Y DETALLE</span></div>
       <div class="menu-cards section-wrap" id="guestMenuCards"></div>
-      <p class="visual-disclaimer section-wrap">Las fotografías de esta página son ilustrativas y no representan necesariamente los productos del establecimiento.</p>
+      <p class="visual-disclaimer section-wrap">Las fotografías identificadas como «imagen ilustrativa» son referencias visuales y pueden no corresponder al plato vendido. Las fotografías reales proceden de las imágenes registradas en TastyIgniter.</p>
     </section>
 
     <section class="experience" id="experiencia">
