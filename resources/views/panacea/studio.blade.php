@@ -19,8 +19,8 @@
     };
   </script>
   <link rel="stylesheet" href="{{ asset('panacea/studio-premium.css') }}?v=4">
-  <link rel="stylesheet" href="{{ asset('panacea/studio-air.css') }}?v=5">
-  <script defer src="{{ asset('panacea/studio.js') }}?v=5"></script>
+  <link rel="stylesheet" href="{{ asset('panacea/studio-air.css') }}?v=6">
+  <script defer src="{{ asset('panacea/studio.js') }}?v=6"></script>
   <script defer src="{{ asset('panacea/studio-shell.js') }}?v=4"></script>
 </head>
 <body>
