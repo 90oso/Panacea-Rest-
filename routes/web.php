@@ -11,6 +11,15 @@ Route::post('/panacea-preview/action', [\App\Http\Controllers\Panacea\StudioCont
 
 Route::get('/panacea-operations', fn () => redirect('/admin'))->name('panacea.operations');
 
+// Local customer-facing concept. Do not deploy publicly without production
+// security, reservation status mapping and anti-abuse integration.
+Route::get('/panacea', [\App\Http\Controllers\Panacea\GuestPortalController::class, 'index'])
+    ->name('panacea.guest.home');
+Route::post('/panacea/book', [\App\Http\Controllers\Panacea\GuestPortalController::class, 'book'])
+    ->middleware('throttle:6,1')->name('panacea.guest.booking');
+
+
+
 
 // Development-only floor-plan editor; native TastyIgniter seat_layout format.
 Route::post('/panacea-preview/floor-plan', function (\Illuminate\Http\Request $request) {
