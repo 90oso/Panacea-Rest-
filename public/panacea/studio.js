@@ -354,19 +354,19 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     const d=current(),e=currentExtras(),people=e.customers||[];
     $('customerMetrics').innerHTML=metric('Perfiles Panacea',e.ready?people.length:'—','Directorio independiente de TastyIgniter')+
       metric('Visitas registradas',e.ready?people.reduce((n,p)=>n+Number(p.visits_count),0):'—','Solo vinculadas explícitamente')+
-      metric('Consentimiento',e.ready?people.filter(p=>Boolean(p.contact_opt_in)).length:'—','Perfiles con autorización')+
+      metric('Consentimiento',e.ready?people.filter(p=>Number(p.contact_opt_in)===1).length:'—','Perfiles con autorización')+
       metric('Reservas Panacea',d.reservations.length,'Incluye solicitudes pendientes');
-    $('customerList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">PERFIL #'+p.id+'</p><h3 style="margin-top:20px">'+esc(p.display_name)+'</h3><p class="card-meta">'+Number(p.visits_count)+' visitas registradas</p><div class="card-footer"><span class="pill '+(p.contact_opt_in?'success':'muted')+'">'+(p.contact_opt_in?'Consentimiento activo':'Sin consentimiento')+'</span></div></article>').join(''):
+    $('customerList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">PERFIL #'+p.id+'</p><h3 style="margin-top:20px">'+esc(p.display_name)+'</h3><p class="card-meta">'+Number(p.visits_count)+' visitas registradas</p><div class="card-footer"><span class="pill '+(Number(p.contact_opt_in)===1?'success':'muted')+'">'+(Number(p.contact_opt_in)===1?'Consentimiento activo':'Sin consentimiento')+'</span></div></article>').join(''):
       empty('No hay perfiles registrados','Crea perfiles solo con la información y el consentimiento necesarios. Los clientes nativos no se importan automáticamente.');
   }
   function renderStaff(){
     const e=currentExtras(),people=e.staff||[];
     const roles={manager:'Gerencia',reception:'Recepción',service:'Salón',kitchen:'Cocina',cashier:'Caja'};
     $('staffMetrics').innerHTML=metric('Personal Panacea',e.ready?people.length:'—','Directorio operativo')+
-      metric('Miembros activos',e.ready?people.filter(p=>Boolean(p.active)).length:'—','No representa usuarios autenticados')+
+      metric('Miembros activos',e.ready?people.filter(p=>Number(p.active)===1).length:'—','No representa usuarios autenticados')+
       metric('Turnos registrados',e.ready?people.filter(p=>p.shift_label).length:'—','Horarios informativos')+
       metric('Control de acceso','Pendiente','Se administra fuera de este directorio');
-    $('staffList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">'+esc(roles[p.role]||p.role)+'</p><h3 style="margin-top:20px">'+esc(p.display_name)+'</h3><p class="card-meta">Turno · '+esc(p.shift_label||'No asignado')+'</p><div class="card-footer"><span class="pill '+(p.active?'success':'muted')+'">'+(p.active?'Activo':'Inactivo')+'</span></div></article>').join(''):
+    $('staffList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">'+esc(roles[p.role]||p.role)+'</p><h3 style="margin-top:20px">'+esc(p.display_name)+'</h3><p class="card-meta">Turno · '+esc(p.shift_label||'No asignado')+'</p><div class="card-footer"><span class="pill '+(Number(p.active)===1?'success':'muted')+'">'+(Number(p.active)===1?'Activo':'Inactivo')+'</span></div></article>').join(''):
       empty('No hay integrantes de equipo','Registra personal y turnos. Este directorio no concede permisos ni reemplaza el acceso de TastyIgniter.');
   }
   function renderIncidents(){
