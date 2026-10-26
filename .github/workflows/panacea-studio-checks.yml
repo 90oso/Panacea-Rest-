@@ -10,6 +10,9 @@ on:
       - 'resources/views/panacea/**'
       - 'public/panacea/**'
       - 'routes/web.php'
+      - 'README.md'
+      - 'docs/**'
+      - 'tests/panacea-*.mjs'
       - '.github/workflows/panacea-studio-checks.yml'
 jobs:
   php-js-lint:
