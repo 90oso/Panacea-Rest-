@@ -1,5 +1,8 @@
 # Panacea Restaurant — Cobertura de la especificación ampliada
 
+> [!CAUTION]
+> **Documento histórico (versión inicial de la especificación).** Su apartado «Conexión real actualmente disponible» ya no refleja completamente el estado del 26-10-2026. Existen tablas operativas Panacea persistentes y un portal cliente local, pero **la integración transaccional nativa continúa pendiente**. Para el estado verificado consulta el [índice de documentación](README.md), [requisitos](03_REQUISITOS_Y_REGLAS.md) y [hoja de ruta](09_HOJA_DE_RUTA.md).
+
 ## Estado de implementación (rama feat/panacea-restaurant-mvp)
 
 La vista `/panacea-preview` es un prototipo interactivo local, **no** un sistema POS listo para producción. Está restringida a `APP_ENV=local`.
