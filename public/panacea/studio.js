@@ -102,7 +102,12 @@
       {id:8402,order_id:8301,menu_id:m2.id,title:m2.name,quantity:1,unit_price:m2.price},
       {id:8403,order_id:8302,menu_id:m3.id,title:m3.name,quantity:1,unit_price:m3.price}
     ];
-    return {mode:'demo',migrated:true,areas,tables,menus:menu,native_reservations:[],reservations,sessions,orders,lines,payments:[],source_counts:{stocks:7,customers:3,staffs:4,orders:orders.length,menus:menu.length},inventory:[{id:1,name:'Harina de trigo',qty:18,min:8,unit:'kg'},{id:2,name:'Mozzarella',qty:3,min:5,unit:'kg'},{id:3,name:'Tomate',qty:7,min:5,unit:'kg'},{id:4,name:'Aceite de oliva',qty:2,min:4,unit:'L'},{id:5,name:'Carne de res',qty:6,min:4,unit:'kg'}],customers:[{name:'María González',visits:14,preference:'Mesa junto a la ventana'},{name:'Carlos Pérez',visits:8,preference:'Sin preferencias registradas'},{name:'Familia Rodríguez',visits:19,preference:'Visita familiar'}],staff:[{name:'Andrea López',role:'Recepción',shift:'12:00 – 20:00'},{name:'Luis Moreno',role:'Mesero',shift:'11:00 – 19:00'},{name:'Sofía Ramos',role:'Cocina',shift:'12:00 – 22:00'},{name:'Mateo Díaz',role:'Caja',shift:'14:00 – 22:00'}],incidents:[{id:1,title:'Mozzarella por debajo del mínimo',severity:'Alta',resolved:false},{id:2,title:'Revisar limpieza de zona de paso',severity:'Media',resolved:false}]};
+    return {mode:'demo',extensions:{ready:true,
+ingredients:[{id:1,name:'Harina de trigo',unit:'kg',min_stock:8,unit_cost:2.20,stock:18},{id:2,name:'Mozzarella',unit:'kg',min_stock:5,unit_cost:9.50,stock:3},{id:3,name:'Tomate',unit:'kg',min_stock:5,unit_cost:3.10,stock:7},{id:4,name:'Aceite de oliva',unit:'L',min_stock:3,unit_cost:11.50,stock:2}],
+recipes:menu.length?[{id:1,menu_id:menu[0].id,ingredient_id:1,quantity:.2}]:[],
+movements:[],customers:[{id:1,display_name:'María González',contact_opt_in:true,visits_count:14},{id:2,display_name:'Carlos Pérez',contact_opt_in:false,visits_count:8}],
+staff:[{id:1,display_name:'Andrea López',role:'reception',shift_label:'12:00–20:00',active:true},{id:2,display_name:'Sofía Ramos',role:'kitchen',shift_label:'12:00–22:00',active:true}],
+incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',owner_label:'Cocina'},{id:2,title:'Revisar zona de paso',severity:'medium',status:'open',owner_label:'Salón'}],audit:[],cost_totals:{consumed:0,uncosted_order_lines:0}},migrated:true,areas,tables,menus:menu,native_reservations:[],reservations,sessions,orders,lines,payments:[],source_counts:{stocks:7,customers:3,staffs:4,orders:orders.length,menus:menu.length},inventory:[{id:1,name:'Harina de trigo',qty:18,min:8,unit:'kg'},{id:2,name:'Mozzarella',qty:3,min:5,unit:'kg'},{id:3,name:'Tomate',qty:7,min:5,unit:'kg'},{id:4,name:'Aceite de oliva',qty:2,min:4,unit:'L'},{id:5,name:'Carne de res',qty:6,min:4,unit:'kg'}],customers:[{name:'María González',visits:14,preference:'Mesa junto a la ventana'},{name:'Carlos Pérez',visits:8,preference:'Sin preferencias registradas'},{name:'Familia Rodríguez',visits:19,preference:'Visita familiar'}],staff:[{name:'Andrea López',role:'Recepción',shift:'12:00 – 20:00'},{name:'Luis Moreno',role:'Mesero',shift:'11:00 – 19:00'},{name:'Sofía Ramos',role:'Cocina',shift:'12:00 – 22:00'},{name:'Mateo Díaz',role:'Caja',shift:'14:00 – 22:00'}],incidents:[{id:1,title:'Mozzarella por debajo del mínimo',severity:'Alta',resolved:false},{id:2,title:'Revisar limpieza de zona de paso',severity:'Media',resolved:false}]};
   }
   function syncDemoFloor(){
     if(!real||!demo)return;
@@ -121,7 +126,8 @@
       real=await res.json();
       if(!demo)demo=demoSeed(real);else syncDemoFloor();
       $('banner').hidden=!!real.migrated;
-      $('banner').textContent=real.migrated?'':'Para activar las reservas, comandas y caja debes ejecutar: php artisan migrate. El plano puede visualizarse mientras tanto.';
+      $('banner').textContent=real.migrated?(real.extensions?.ready?'':'Para activar inventario, directorios y auditoría, ejecuta php artisan migrate.'):'Para activar reservas, comandas y caja debes ejecutar: php artisan migrate.';
+      $('banner').hidden=!!real.migrated&&!!real.extensions?.ready;
       if(showNotice)notify('Datos actualizados desde MariaDB');
       render();
     }catch(err){
@@ -295,35 +301,49 @@
   }
 
 
+  function currentExtras(){
+    const d=current();
+    return d?.extensions||{ready:false,ingredients:[],recipes:[],movements:[],customers:[],staff:[],incidents:[],audit:[],cost_totals:{consumed:0,uncosted_order_lines:0}};
+  }
   function renderInventory(){
-    const d=current(),items=source==='demo'?(d.inventory||[]):[];
-    const low=items.filter(x=>x.qty<x.min);
-    $('inventoryMetrics').innerHTML=metric('Registros de stock',source==='real'?(d.source_counts?.stocks??'—'):items.length,source==='real'?'Total nativo, sin cantidades verificadas':'Almacén ficticio')+
-      metric('Bajo mínimo',source==='real'?'—':low.length,source==='real'?'Requiere mapeo del modelo de stock':'Según mínimos del escenario')+
-      metric('Propuesta de compra',source==='real'?'Pendiente':low.length,'Solo demostración')+
-      metric('Descuento al vender','No activo','Pendiente de integración con recetas');
-    $('inventoryList').innerHTML=items.length?items.map(x=>'<div class="activity-row"><div><b>'+esc(x.name)+'</b><small>Umbral: '+x.min+' '+esc(x.unit)+'</small></div><div><strong>'+x.qty+' '+esc(x.unit)+'</strong><div>'+pill(x.qty<x.min?'Bajo mínimo':'Normal')+'</div></div></div>').join(''):empty('Inventario nativo identificado por recuento','No se muestran existencias ni costos sin verificar las columnas y reglas de la extensión de stock.');
-    $('inventoryNotes').innerHTML=source==='demo'?'<p class="inspector-desc">Las reposiciones de prueba modifican únicamente la memoria del navegador. No se descuentan insumos al crear comandas.</p><p class="small-note">Pendiente: recetas, mermas, movimientos auditables y compras.</p>':'<p class="inspector-desc">Hay '+esc(d.source_counts?.stocks??'—')+' registros de stock en el sistema nativo. Su contenido requiere mapeo antes de mostrar cifras o permitir movimientos reales.</p><p class="small-note">No se alteran las existencias de TastyIgniter.</p>';
+    const d=current(),e=currentExtras(),items=e.ingredients||[],low=items.filter(x=>Number(x.stock)<Number(x.min_stock));
+    const coverage=new Set((e.recipes||[]).map(x=>x.menu_id)).size;
+    $('inventoryMetrics').innerHTML=metric('Ingredientes',e.ready?items.length:'—','Inventario operativo Panacea')+
+      metric('Bajo mínimo',e.ready?low.length:'—','Según los umbrales definidos')+
+      metric('Recetas configuradas',e.ready?coverage:'—','Productos con consumo vinculado')+
+      metric('Costo consumido',e.ready?money(e.cost_totals?.consumed||0):'—','Movimiento real de comandas Panacea');
+    $('inventoryList').innerHTML=items.length?items.map(x=>'<div class="activity-row"><div><b>'+esc(x.name)+'</b><small>Mínimo: '+Number(x.min_stock)+' '+esc(x.unit)+' · Costo unitario '+money(x.unit_cost)+'</small></div><div class="inventory-actions"><strong>'+Number(x.stock).toFixed(3)+' '+esc(x.unit)+'</strong><span class="pill '+(Number(x.stock)<Number(x.min_stock)?'warning':'success')+'">'+(Number(x.stock)<Number(x.min_stock)?'Bajo mínimo':'En rango')+'</span><button class="micro-btn" data-command="receive-stock" data-ingredient="'+x.id+'">+ Entrada</button></div></div>').join(''):
+      empty('Inventario sin ingredientes','Crea el primer ingrediente para definir su unidad, umbral y costo, y registra una entrada real de stock.');
+    const recipes=e.recipes||[],catalog=d.menus||[];
+    $('inventoryNotes').innerHTML='<p class="inspector-desc">Los movimientos están en el inventario de Panacea; no se modifica el stock nativo de TastyIgniter. Cuando una comanda pasa a preparación se descuenta su receta, una sola vez.</p>'+
+      '<div class="surface-heading"><h2>Recetas vinculadas</h2><span class="pill muted">'+recipes.length+' ingredientes asociados</span></div>'+
+      (recipes.length?recipes.map(r=>'<div class="activity-row"><div><b>'+esc(catalog.find(m=>Number(m.id)===Number(r.menu_id))?.name||'Producto #'+r.menu_id)+'</b><small>'+esc(items.find(x=>Number(x.id)===Number(r.ingredient_id))?.name||'Ingrediente')+'</small></div><strong>'+Number(r.quantity).toFixed(3)+' '+esc(items.find(x=>Number(x.id)===Number(r.ingredient_id))?.unit||'')+'</strong></div>').join(''):empty('Sin recetas','Asocia ingredientes con platos para conocer consumos y costos.'))+
+      '<div class="integration-footnote">Registros del stock nativo: '+esc(d.source_counts?.stocks??'—')+' · Pendiente sincronización certificada con TastyIgniter.</div>';
   }
   function renderCustomers(){
-    const d=current(),people=source==='demo'?d.customers||[]:[];
-    $('customerMetrics').innerHTML=metric('Clientes registrados',source==='real'?(d.source_counts?.customers??'—'):people.length,source==='real'?'Conteo del sistema nativo':'Contactos ficticios')+
-      metric('Historial de visitas',source==='real'?'Sin integrar':people.reduce((n,p)=>n+p.visits,0),source==='real'?'Requiere consentimiento y relaciones verificadas':'Visitas ilustrativas')+
-      metric('Reservas Panacea',d.reservations.length,'Registros de la fuente seleccionada')+
-      metric('Fidelización','Pendiente','No hay puntos reales');
-    $('customerList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">CONTACTO FICTICIO</p><h3 style="margin-top:20px">'+esc(p.name)+'</h3><p class="card-meta">'+p.visits+' visitas ilustrativas</p><div class="card-footer"><span class="pill muted">'+esc(p.preference)+'</span></div></article>').join(''):empty('Directorio aún no integrado','El número de clientes se consulta cuando la tabla nativa existe. Los perfiles y preferencias no se exponen sin un modelo de permisos y consentimiento.');
+    const d=current(),e=currentExtras(),people=e.customers||[];
+    $('customerMetrics').innerHTML=metric('Perfiles Panacea',e.ready?people.length:'—','Directorio independiente de TastyIgniter')+
+      metric('Visitas registradas',e.ready?people.reduce((n,p)=>n+Number(p.visits_count),0):'—','Solo vinculadas explícitamente')+
+      metric('Consentimiento',e.ready?people.filter(p=>Boolean(p.contact_opt_in)).length:'—','Perfiles con autorización')+
+      metric('Reservas Panacea',d.reservations.length,'Incluye solicitudes pendientes');
+    $('customerList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">PERFIL #'+p.id+'</p><h3 style="margin-top:20px">'+esc(p.display_name)+'</h3><p class="card-meta">'+Number(p.visits_count)+' visitas registradas</p><div class="card-footer"><span class="pill '+(p.contact_opt_in?'success':'muted')+'">'+(p.contact_opt_in?'Consentimiento activo':'Sin consentimiento')+'</span></div></article>').join(''):
+      empty('No hay perfiles registrados','Crea perfiles solo con la información y el consentimiento necesarios. Los clientes nativos no se importan automáticamente.');
   }
   function renderStaff(){
-    const d=current(),people=source==='demo'?d.staff||[]:[];
-    $('staffMetrics').innerHTML=metric('Registros de personal',source==='real'?(d.source_counts?.staffs??'—'):people.length,'Fuente seleccionada')+
-      metric('Roles y permisos',source==='real'?'TastyIgniter':'4 perfiles','Gestión central')+
-      metric('Turnos',source==='real'?'Sin integrar':'Ilustrativos','No modifica calendarios')+
-      metric('Registro de acciones','Pendiente','Auditoría por usuario');
-    $('staffList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">'+esc(p.role)+'</p><h3 style="margin-top:20px">'+esc(p.name)+'</h3><p class="card-meta">Horario · '+esc(p.shift)+'</p><div class="card-footer"><span class="pill muted">Turno demo</span></div></article>').join(''):empty('Personal gestionado desde administración','Los permisos, turnos y fichajes nativos necesitan autenticación y autorización antes de gestionarse desde Panacea.');
+    const e=currentExtras(),people=e.staff||[];
+    const roles={manager:'Gerencia',reception:'Recepción',service:'Salón',kitchen:'Cocina',cashier:'Caja'};
+    $('staffMetrics').innerHTML=metric('Personal Panacea',e.ready?people.length:'—','Directorio operativo')+
+      metric('Miembros activos',e.ready?people.filter(p=>Boolean(p.active)).length:'—','No representa usuarios autenticados')+
+      metric('Turnos registrados',e.ready?people.filter(p=>p.shift_label).length:'—','Horarios informativos')+
+      metric('Control de acceso','Pendiente','Se administra fuera de este directorio');
+    $('staffList').innerHTML=people.length?people.map(p=>'<article class="reservation-card"><p class="overline">'+esc(roles[p.role]||p.role)+'</p><h3 style="margin-top:20px">'+esc(p.display_name)+'</h3><p class="card-meta">Turno · '+esc(p.shift_label||'No asignado')+'</p><div class="card-footer"><span class="pill '+(p.active?'success':'muted')+'">'+(p.active?'Activo':'Inactivo')+'</span></div></article>').join(''):
+      empty('No hay integrantes de equipo','Registra personal y turnos. Este directorio no concede permisos ni reemplaza el acceso de TastyIgniter.');
   }
   function renderIncidents(){
-    const items=source==='demo'?demo.incidents:[];
-    $('incidentList').innerHTML=items.length?items.map(i=>'<article class="reservation-card"><p class="overline">INCIDENCIA #'+i.id+'</p><h3 style="margin-top:20px">'+esc(i.title)+'</h3><p class="card-meta">Prioridad '+esc(i.severity)+'</p><div class="card-footer">'+pill(i.resolved?'Resuelta':'Abierta')+(i.resolved?'':'<button class="micro-btn accent" data-resolve-incident="'+i.id+'">Resolver</button>')+'</div></article>').join(''):empty(source==='real'?'Incidencias no habilitadas en datos reales':'No hay incidencias abiertas','Se requiere registro persistente, roles y auditoría para el uso operativo. La demostración se mantiene interactiva.');
+    const e=currentExtras(),items=e.incidents||[];
+    const severity={low:'Baja',medium:'Media',high:'Alta'};
+    $('incidentList').innerHTML=items.length?items.map(i=>'<article class="reservation-card"><p class="overline">INCIDENCIA #'+i.id+'</p><h3 style="margin-top:20px">'+esc(i.title)+'</h3><p class="card-meta">Prioridad '+esc(severity[i.severity]||i.severity)+' · Responsable '+esc(i.owner_label||'Sin asignar')+'</p><div class="card-footer"><span class="pill '+(i.status==='resolved'?'success':'warning')+'">'+(i.status==='resolved'?'Resuelta':'Abierta')+'</span>'+(i.status==='resolved'?'':'<button class="micro-btn accent" data-resolve-incident="'+i.id+'">Resolver</button>')+'</div></article>').join(''):
+      empty('Sin incidencias abiertas','Crea una incidencia, asigna prioridad y resuélvela cuando se atienda.');
   }
   function renderSimulator(){
     const price=Number($('simPrice').value)||0,cost=Number($('simCost').value)||0,volume=Number($('simVolume').value)||0,discount=Math.max(0,Math.min(100,Number($('simDiscount').value)||0));
@@ -331,15 +351,20 @@
     $('simulationResults').innerHTML=metric('Ingreso diario',money(sales),'Con descuento')+metric('Costo variable',money(variable),'Por volumen')+metric('Contribución',money(sales-variable),'Antes de costos fijos')+metric('Margen',sales?((sales-variable)/sales*100).toFixed(1)+'%':'—','Simulación únicamente');
   }
   function renderManagement(){
-    const d=current(),closed=d.sessions.filter(s=>s.status==='closed'),orders=d.orders,payments=d.payments;
+    const d=current(),e=currentExtras(),closed=d.sessions.filter(s=>s.status==='closed'),orders=d.orders,payments=d.payments;
     const paid=payments.reduce((sum,p)=>sum+Number(p.amount),0);
-    $('managementMetrics').innerHTML=metric('Comandas Panacea',orders.length,'No incluye pedidos nativos')+
-      metric('Abonos manuales',money(paid),'Sin validación bancaria')+
-      metric('Servicios cerrados',closed.length,'Ciclo completado')+
-      metric('Reservas Panacea',d.reservations.length,'Separadas de TastyIgniter');
-    $('managementOrders').innerHTML=['pending','preparing','ready','served'].map(status=>'<div class="activity-row"><div><b>'+esc(statusNames[status])+'</b><small>Comandas de la operación Panacea</small></div><strong>'+orders.filter(o=>o.status===status).length+'</strong></div>').join('');
-    const counts=d.source_counts||{};
-    $('managementSources').innerHTML=source==='real'?['orders','menus','stocks','customers','staffs'].map(name=>'<div class="activity-row"><div><b>'+esc(({orders:'Pedidos nativos',menus:'Productos',stocks:'Stock',customers:'Clientes',staffs:'Personal'}[name]))+'</b><small>Conteo de registros nativos, no sumado a Panacea</small></div><strong>'+esc(counts[name]??'—')+'</strong></div>').join(''):'<p class="inspector-desc">El modo demostración utiliza cantidades simuladas para ensayar operaciones. Cambia a Datos reales para consultar los recuentos de TastyIgniter.</p>';
+    const consumed=Number(e.cost_totals?.consumed||0),uncosted=Number(e.cost_totals?.uncosted_order_lines||0);
+    $('managementMetrics').innerHTML=metric('Comandas Panacea',orders.length,'No suma pedidos nativos')+
+      metric('Abonos manuales',money(paid),'No es ingreso fiscal conciliado')+
+      metric('Costo de recetas',e.ready?money(consumed):'—','Consumo al iniciar preparación')+
+      metric('Cobertura de costos',e.ready?(uncosted?'Incompleta':'Revisable'):'Pendiente',uncosted+' líneas sin receta configurada');
+    $('managementOrders').innerHTML=['pending','preparing','ready','served'].map(status=>'<div class="activity-row"><div><b>'+esc(statusNames[status])+'</b><small>Comandas de la operación Panacea</small></div><strong>'+orders.filter(o=>o.status===status).length+'</strong></div>').join('')+
+      '<div class="integration-footnote">Servicios cerrados: '+closed.length+' · Reservas: '+d.reservations.length+'. No estimamos utilidad neta sin impuestos, mermas, costos fijos y conciliación.</div>';
+    const counts=d.source_counts||{},audits=e.audit||[];
+    $('managementSources').innerHTML=(source==='real'?['orders','menus','stocks','customers','staffs'].map(name=>'<div class="activity-row"><div><b>'+esc(({orders:'Pedidos nativos',menus:'Productos',stocks:'Stock',customers:'Clientes',staffs:'Personal'}[name]))+'</b><small>Registros nativos de TastyIgniter</small></div><strong>'+esc(counts[name]??'—')+'</strong></div>').join(''):'<p class="inspector-desc">Escenario ficticio. Cambia a Datos reales para ver los conteos nativos de TastyIgniter.</p>')+
+      '<div class="surface-heading audit-header"><div><p class="overline">TRAZABILIDAD</p><h2>Últimas acciones de Panacea</h2></div></div>'+
+      (audits.length?audits.slice(0,6).map(a=>'<div class="activity-row"><div><b>'+esc(a.action)+'</b><small>'+esc(a.resource_type)+' · #'+esc(a.resource_id||'—')+'</small></div><span class="small-note">'+esc(String(a.occurred_at).slice(0,16))+'</span></div>').join(''):empty('Sin eventos de auditoría','Aparecerán aquí al realizar acciones operativas en Panacea.'))+
+      '<div class="integration-footnote">Los datos de operación de Panacea y TastyIgniter siguen separados hasta su conciliación.</div>';
   }
 
   async function post(type,payload){
