@@ -1,5 +1,9 @@
 # 02 — Arquitectura técnica y stack
 
+> [!IMPORTANT]
+> **Documento de referencia del MVP heredado.** La dirección aprobada para el siguiente desarrollo es **Panacea Core independiente**, sin TastyIgniter en runtime. No implementar nuevas integraciones nativas como destino final. Priorizar [ADR-001](architecture/ADR_001_CORE_INDEPENDIENTE.md) y el [plan standalone](architecture/PLAN_MIGRACION_CORE.md).
+
+
 ## Tecnologías verificadas en el repositorio
 
 | Área | Dependencia/configuración | Evidencia |
