@@ -1,0 +1,32 @@
+name: Panacea Studio static checks
+on:
+  push:
+    branches:
+      - feat/panacea-restaurant-mvp
+  pull_request:
+    paths:
+      - 'app/Http/Controllers/Panacea/**'
+      - 'database/migrations/*panacea*'
+      - 'resources/views/panacea/**'
+      - 'public/panacea/**'
+      - 'routes/web.php'
+      - '.github/workflows/panacea-studio-checks.yml'
+jobs:
+  php-js-lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP route and controller syntax
+        run: |
+          php -l routes/web.php
+          php -l app/Http/Controllers/Panacea/StudioController.php
+          php -l database/migrations/2026_10_25_000001_create_panacea_floor_elements_table.php
+          php -l database/migrations/2026_10_25_000002_create_panacea_service_workflow_tables.php
+      - name: JavaScript syntax
+        run: node --check public/panacea/studio.js
+      - name: Required app files present
+        run: |
+          test -s resources/views/panacea/studio.blade.php
+          test -s public/panacea/studio.css
+          test -s public/panacea/studio.js
