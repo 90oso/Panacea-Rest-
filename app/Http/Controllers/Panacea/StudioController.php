@@ -109,7 +109,13 @@ class StudioController extends Controller
                 ->orderByDesc('id')->get()
             : [];
 
+        $counts = [];
+        foreach (['stocks','customers','staffs','orders','menus'] as $name) {
+            $counts[$name] = Schema::hasTable($name) ? DB::table($name)->count() : null;
+        }
+
         return response()->json([
+            'source_counts' => $counts,
             'mode' => 'real', 'migrated' => $migrated, 'areas' => $areas, 'tables' => $tables,
             'menus' => $menus, 'native_reservations' => $nativeReservations,
             'reservations' => $reservations, 'sessions' => $sessions,
@@ -162,8 +168,10 @@ class StudioController extends Controller
                 ]);
                 $table = $this->lockTable($p['table_id']);
                 $this->checkCapacity($table, $p['party_size']);
-                $start = Carbon::parse($p['reserved_at']);
-                if ($start->lt(now()) || $start->gt(now()->addDays(90))) {
+                $restaurantTimezone = 'America/Panama';
+                $start = Carbon::parse($p['reserved_at'], $restaurantTimezone);
+                $restaurantNow = Carbon::now($restaurantTimezone);
+                if ($start->lt($restaurantNow) || $start->gt($restaurantNow->copy()->addDays(90))) {
                     $this->fail('La reserva debe estar entre ahora y los próximos 90 días.');
                 }
                 $conflicts = DB::table('panacea_service_reservations')
