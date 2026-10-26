@@ -84,6 +84,11 @@
     0 0 28px rgba(245,191,126,.23);
   transition:top .28s ease,left .28s ease,width .28s ease,height .28s ease,opacity .22s ease;
 }
+@keyframes panaceaQuestFocus {
+  0%,100%{box-shadow:0 0 0 1px rgba(255,255,255,.21) inset,0 0 0 4px rgba(219,159,103,.17),0 0 19px rgba(245,191,126,.20)}
+  50%{box-shadow:0 0 0 1px rgba(255,255,255,.26) inset,0 0 0 6px rgba(219,159,103,.24),0 0 35px rgba(245,191,126,.30)}
+}
+.tour-spotlight:not([hidden]){animation:panaceaQuestFocus 3.5s ease-in-out infinite}
 .tour-spotlight:before,
 .tour-spotlight:after{
   content:"";
