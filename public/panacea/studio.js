@@ -206,8 +206,13 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     $('reservationCount').textContent=reservations.length+' reserva'+(reservations.length===1?'':'s');
     $('reservationGrid').innerHTML=reservations.length?reservations.map(r=>{
       const time=String(r.reserved_at).slice(11,16),day=fmtDate(r.reserved_at).split(' · ')[0];
-      const valid=r.status==='confirmed';
-      return '<article class="reservation-card"><p class="overline">RESERVA #'+r.id+' · '+esc(day)+'</p><div class="reservation-time">'+esc(time)+'</div><h3>'+esc(r.guest_name)+'</h3><div class="card-meta">'+r.party_size+' personas · '+esc(tableName(data,r.dining_table_id))+'</div><div class="card-footer">'+pill(r.status)+'<div class="card-buttons">'+(valid?'<button class="micro-btn" data-cancel-res="'+r.id+'">Cancelar</button><button class="micro-btn accent" data-seat-res="'+r.id+'">Recibir ↗</button>':'')+'</div></div></article>';
+      const valid=r.status==='confirmed',pending=r.status==='pending';
+      return '<article class="reservation-card"><p class="overline">RESERVA #'+r.id+' · '+esc(day)+'</p><div class="reservation-time">'+esc(time)+'</div><h3>'+esc(r.guest_name)+'</h3><div class="card-meta">'+r.party_size+' personas · '+esc(tableName(data,r.dining_table_id))+
+      '<br>'+(r.source==='guest_portal'?'Solicitud recibida desde el portal':'Reserva registrada en Panacea')+'</div><div class="card-footer">'+pill(r.status)+'<div class="card-buttons">'+
+      (pending?'<button class="micro-btn accent" data-confirm-res="'+r.id+'">Confirmar</button>':'')+
+      ((valid||pending)?'<button class="micro-btn" data-cancel-res="'+r.id+'">Cancelar</button>':'')+
+      (valid?'<button class="micro-btn accent" data-seat-res="'+r.id+'">Recibir ↗</button>':'')+
+      '</div></div></article>';
     }).join(''):empty('No hay reservas para esta selección','Puedes registrar una reserva utilizando el botón superior. El mismo diseño se mantiene en ambos modos.','<button class="micro-btn accent" data-command="new-reservation">+ Nueva reserva</button>');
     const natives=source==='real'?data.native_reservations:[];
     $('nativeReservationList').innerHTML=natives.length?'<div class="native-grid">'+natives.map(r=>'<div class="native-chip">#'+esc(r.reservation_id)+' · '+esc(r.reserve_date||'Fecha no disponible')+' '+esc(r.reserve_time||'')+' · Estado '+esc(r.status_id??'—')+'</div>').join('')+'</div>':empty(source==='real'?'Sin reservas nativas':'Datos nativos no mostrados en Demo',source==='real'?'No hay registros de reserva en TastyIgniter. Las reservas de Panacea se muestran arriba de forma separada.':'Este panel no mezcla los datos reales del sistema original con el escenario de demostración.');
@@ -459,10 +464,12 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     const d=current(),reservation=d.reservations.find(r=>r.id===Number(reservationId));
     const table=reservation?.dining_table_id||tableId;
     const selected=d.tables.find(t=>t.id===Number(table))||d.tables[0];
+    const profiles=currentExtras().customers||[];
     showModal('SALÓN · RECEPCIÓN','Abrir servicio',
       '<label class="modal-field">Mesa<select name="table_id" required>'+tableOptions(d,table)+'</select></label>'+
       field('Nombre del cliente','guest_name','text',reservation?.guest_name||'', 'maxlength="100"')+
       field('Comensales','party_size','number',Math.max(Number(selected?.min_capacity)||1,Math.min(reservation?.party_size||2,selected?.capacity||50)),'min="1" max="50"')+
+      '<label class="modal-field">Cliente registrado (opcional)<select name="guest_profile_id"><option value="">Sin perfil vinculado</option>'+profiles.map(p=>'<option value="'+p.id+'">'+esc(p.display_name)+'</option>').join('')+'</select></label>'+
       '<input type="hidden" name="reservation_id" value="'+(reservation?.id||'')+'">'+
       '<p class="small-note">Esto registra un servicio de Panacea, no cambia automáticamente el estado de ocupación nativo de TastyIgniter.</p>',
       'seat','Iniciar servicio');
@@ -485,6 +492,62 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
       '<label class="modal-field">Método informado<select name="method" required><option value="cash">Efectivo</option><option value="card">Tarjeta (registrada manualmente)</option><option value="other">Otro medio</option></select></label>',
       'pay','Registrar abono');
   }
+
+  function ingredientModal(){
+    showModal('ALMACÉN · INVENTARIO','Nuevo ingrediente',
+      field('Nombre del ingrediente','name','text','','maxlength="120"')+
+      '<label class="modal-field">Unidad<select name="unit" required><option value="unidad">Unidad</option><option value="g">Gramos</option><option value="kg">Kilogramos</option><option value="ml">Mililitros</option><option value="L">Litros</option></select></label>'+
+      field('Stock mínimo','min_stock','number','0','min="0" max="100000" step="0.001"')+
+      field('Costo unitario (USD)','unit_cost','number','0','min="0" max="100000" step="0.0001"'),
+      'ingredient_create','Crear ingrediente');
+  }
+  function receiveStockModal(id){
+    const ingredient=currentExtras().ingredients.find(x=>Number(x.id)===Number(id));
+    if(!ingredient)return notify('Selecciona un ingrediente.',true);
+    showModal('ALMACÉN · RECEPCIÓN','Registrar entrada',
+      '<input type="hidden" name="ingredient_id" value="'+ingredient.id+'">'+
+      '<p class="small-note">Ingrediente: '+esc(ingredient.name)+' · Unidad: '+esc(ingredient.unit)+' · Existencia actual: '+Number(ingredient.stock).toFixed(3)+'</p>'+
+      field('Cantidad recibida','quantity','number','1','min="0.001" max="100000" step="0.001"')+
+      field('Costo por unidad (USD)','unit_cost','number',ingredient.unit_cost,'min="0" max="100000" step="0.0001"')+
+      '<label class="modal-field">Referencia (opcional)<input name="note" maxlength="180" placeholder="Factura, proveedor o referencia"></label>',
+      'stock_receive','Registrar entrada');
+  }
+  function recipeModal(){
+    const d=current(),ingredients=currentExtras().ingredients||[];
+    if(!d.menus.length||!ingredients.length)return notify('Necesitas un ingrediente y un producto en el catálogo.',true);
+    showModal('COCINA · RECETARIO','Vincular ingrediente y plato',
+      '<label class="modal-field">Producto del catálogo<select name="menu_id" required>'+
+      d.menus.map(m=>'<option value="'+m.id+'">'+esc(m.name)+'</option>').join('')+'</select></label>'+
+      '<label class="modal-field">Ingrediente<select name="ingredient_id" required>'+
+      ingredients.map(x=>'<option value="'+x.id+'">'+esc(x.name)+' ('+esc(x.unit)+')</option>').join('')+'</select></label>'+
+      field('Cantidad por unidad de producto','quantity','number','0.200','min="0.001" max="100000" step="0.001"')+
+      '<p class="small-note">Ejemplo: una pizza utiliza 0.200 kg de harina. Si ya existe la asociación, se actualizará la cantidad.</p>',
+      'recipe_set','Guardar receta');
+  }
+  function profileModal(){
+    showModal('RELACIÓN · CLIENTES','Nuevo perfil de cliente',
+      field('Nombre del cliente','display_name','text','','maxlength="100"')+
+      '<label class="modal-field checkbox-field"><input type="checkbox" name="contact_opt_in" value="1"> El cliente otorgó consentimiento para ser contactado.</label>'+
+      '<p class="small-note">No se vinculan sesiones por similitud de nombre; el personal selecciona explícitamente el perfil al abrir el servicio.</p>',
+      'profile_create','Guardar perfil');
+  }
+  function staffModal(){
+    showModal('OPERACIÓN · PERSONAL','Nuevo integrante',
+      field('Nombre','display_name','text','','maxlength="100"')+
+      '<label class="modal-field">Rol de directorio<select name="role" required><option value="service">Salón</option><option value="reception">Recepción</option><option value="kitchen">Cocina</option><option value="cashier">Caja</option><option value="manager">Gerencia</option></select></label>'+
+      '<label class="modal-field">Turno informativo<input name="shift_label" maxlength="80" placeholder="Ej.: 11:00 a 19:00"></label>'+
+      '<p class="small-note">Este directorio NO concede permisos de acceso. Los roles efectivos se configuran en TastyIgniter.</p>',
+      'staff_create','Registrar integrante');
+  }
+  function incidentModal(){
+    showModal('CALIDAD · INCIDENCIAS','Registrar incidencia',
+      field('Título de la incidencia','title','text','','maxlength="140"')+
+      '<label class="modal-field">Prioridad<select name="severity" required><option value="medium">Media</option><option value="high">Alta</option><option value="low">Baja</option></select></label>'+
+      '<label class="modal-field">Responsable (opcional)<input name="owner_label" maxlength="80" placeholder="Cocina, salón o responsable"></label>'+
+      '<label class="modal-field">Mesa relacionada (opcional)<select name="dining_table_id"><option value="">Sin mesa</option>'+tableOptions(current())+'</select></label>',
+      'incident_create','Registrar incidencia');
+  }
+
   async function submitModal(event){
     event.preventDefault();
     if(!modalContext)return;
@@ -496,10 +559,13 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
     }
     if(type==='reserve')data.reserved_at=data.reserved_at.replace('T',' ')+':00';
     if(type==='seat'&&!data.reservation_id)delete data.reservation_id;
+    if(type==='seat'&&!data.guest_profile_id)delete data.guest_profile_id;
+    if(type==='profile_create')data.contact_opt_in=data.contact_opt_in==='1';
+    if(type==='incident_create'&&!data.dining_table_id)delete data.dining_table_id;
     $('modalSubmit').disabled=true;$('modalError').hidden=true;
     try{
       await post(type,data);
-      hideModal();notify(({reserve:'Reserva confirmada',seat:'Servicio iniciado',add_order:'Comanda enviada a cocina',pay:'Abono registrado'})[type]||'Operación registrada');
+      hideModal();notify(({reserve:'Reserva confirmada',seat:'Servicio iniciado',add_order:'Comanda enviada a cocina',pay:'Abono registrado',ingredient_create:'Ingrediente creado',stock_receive:'Entrada registrada',recipe_set:'Receta guardada',profile_create:'Perfil creado',staff_create:'Integrante registrado',incident_create:'Incidencia registrada'})[type]||'Operación registrada');
       render();
     }catch(error){$('modalError').textContent=error.message;$('modalError').hidden=false;}
     finally{$('modalSubmit').disabled=false;}
@@ -586,10 +652,18 @@ incidents:[{id:1,title:'Mozzarella bajo mínimo',severity:'high',status:'open',o
       if(cmd==='apply-arch')updateArchitecture();
       if(cmd==='delete-arch'){editDraft.areas[0].elements.splice(selectedElement,1);selectedElement=null;renderFloor();}
       if(cmd==='restock-demo'){if(source!=='demo')return notify('Reponer existencias requiere integración con stock real.',true);demo.inventory.forEach(i=>{if(i.qty<i.min)i.qty=i.min*2});renderInventory();notify('Reposición simulada');}
-      if(cmd==='new-incident'){if(source!=='demo')return notify('El registro real requiere auditoría y permisos.',true);demo.incidents.unshift({id:Math.max(...demo.incidents.map(i=>i.id),0)+1,title:'Incidencia de ejemplo',severity:'Media',resolved:false});renderIncidents();notify('Incidencia simulada');}
+      if(cmd==='new-incident')incidentModal();
+      if(cmd==='new-ingredient')ingredientModal();
+      if(cmd==='receive-stock')receiveStockModal(Number(command.dataset.ingredient));
+      if(cmd==='new-recipe')recipeModal();
+      if(cmd==='new-profile')profileModal();
+      if(cmd==='new-staff')staffModal();
       return;
     }
-    const resolved=e.target.closest('[data-resolve-incident]');if(resolved&&source==='demo'){const incident=demo.incidents.find(i=>i.id===Number(resolved.dataset.resolveIncident));if(incident)incident.resolved=true;renderIncidents();notify('Incidencia resuelta en demo');return;}
+    const resolved=e.target.closest('[data-resolve-incident]');
+    if(resolved){await execute('incident_resolve',{incident_id:Number(resolved.dataset.resolveIncident)},'Incidencia resuelta');return;}
+    const confirmRes=e.target.closest('[data-confirm-res]');
+    if(confirmRes){await execute('confirm_reservation',{reservation_id:Number(confirmRes.dataset.confirmRes)},'Solicitud confirmada');return;}
     const seatRes=e.target.closest('[data-seat-res]');
     if(seatRes){const r=current().reservations.find(r=>r.id===Number(seatRes.dataset.seatRes));if(r)seatModal(r.dining_table_id,r.id);return;}
     const cancelRes=e.target.closest('[data-cancel-res]');
