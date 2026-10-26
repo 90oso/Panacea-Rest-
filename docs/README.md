@@ -6,6 +6,16 @@
 
 > **Principio de lectura:** se distinguen lo **implementado en Panacea**, lo **heredado de TastyIgniter**, lo **simulado** y lo **pendiente**. Que una función aparezca en el diseño no significa que esté integrada en producción.
 
+## Cambio de arquitectura: Panacea Standalone
+
+> **Decisión de producto (26-10-2026):** TastyIgniter será únicamente una **referencia de estudio**, no el núcleo de la nueva versión. **El repositorio presente aún depende de TastyIgniter** y se conserva como demo y origen de extracción. Los documentos 01–10 describen principalmente ese MVP histórico; las nuevas decisiones de producto tienen prioridad.
+
+- [Auditoría de independencia y comparación de origen](architecture/AUDITORIA_INDEPENDENCIA.md): evidencias de dependencia y clasificación de **145 archivos**.
+- [Inventario por archivo (CSV)](architecture/INVENTARIO_INDEPENDENCIA.csv): acción propuesta y prioridad para cada archivo versionado.
+- [ADR-001: decisión de un núcleo Laravel propio](architecture/ADR_001_CORE_INDEPENDIENTE.md): monolito modular sin runtime Igniter.
+- [Plan de migración del Core](architecture/PLAN_MIGRACION_CORE.md): secuencia, dependencias y entregables.
+- [Prueba de independencia](architecture/PRUEBA_DE_INDEPENDENCIA.md): condiciones de aceptación antes de considerar el producto autónomo.
+
 ## Documentos de referencia
 
 | Documento | Contenido |
