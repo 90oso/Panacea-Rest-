@@ -14,9 +14,10 @@ Route::get('/panacea-operations', fn () => redirect('/admin'))->name('panacea.op
 
 // Local customer-facing concept. Do not deploy publicly without production
 // security, reservation status mapping and anti-abuse integration.
-Route::get('/panacea', [\App\Http\Controllers\Panacea\GuestPortalController::class, 'index'])
+// Avoid /panacea, which is a real public/panacea asset directory.
+Route::get('/experiencia', [\App\Http\Controllers\Panacea\GuestPortalController::class, 'index'])
     ->name('panacea.guest.home');
-Route::post('/panacea/book', [\App\Http\Controllers\Panacea\GuestPortalController::class, 'book'])
+Route::post('/experiencia/reservar', [\App\Http\Controllers\Panacea\GuestPortalController::class, 'book'])
     ->middleware('throttle:6,1')->name('panacea.guest.booking');
 
 
