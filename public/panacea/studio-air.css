@@ -1,0 +1,125 @@
+/* Panacea Studio — Daylight Hospitality, warmer/brighter variant */
+:root{
+ --bg:#f8f6f1;--paper:#fffefa;--panel:rgba(255,254,249,.95);
+ --ink:#3d433c;--ink-sub:#7d8178;--muted:#8c9088;
+ --line:#e5e4dc;--tint:#f1f1e9;--accent:#b77f60;
+ --side:#faf9f4;--side-ink:#3b4039;--copper:#b88760;
+ --glass:rgba(255,255,251,.86);--glass-solid:rgba(255,254,250,.98);
+ --glass-edge:rgba(255,255,255,.91);
+ --shadow:0 12px 32px #6562440c,0 1px 2px #79796a10;
+ --ambient-green:rgba(189,210,184,.12);
+ --ambient-peach:rgba(226,193,158,.16)
+}
+body{background:radial-gradient(circle at 83% 0%,#f2eade 0%,transparent 30%),radial-gradient(circle at 18% 37%,#e7eee6 0%,transparent 35%),var(--bg)}
+.side{
+ background:linear-gradient(180deg,rgba(255,254,250,.98),rgba(244,245,237,.97))!important;
+ color:#454b42;border-right:1px solid #e8e7df;
+ box-shadow:8px 0 27px #555c4810,inset -1px 0 #fff;
+}
+.side::before{background:linear-gradient(90deg,transparent,#dcb79580,transparent)}
+.side .brand-symbol{background:linear-gradient(145deg,#e7c8a4,#dab187);color:#554733;box-shadow:0 4px 14px #a88f7320}
+.side .brand-copy strong{color:#39483b}
+.side .brand-copy span{color:#948b7b}
+.side .side-caption,.side .nav-separator{color:#a08b76}
+.side .navigation button{
+ color:#6b7169;transition:background .22s,color .22s,transform .22s,border-color .22s;
+}
+.side .navigation button:hover{background:#eaece3;color:#354b3a;transform:translateX(3px)}
+.side .navigation button.active{background:linear-gradient(110deg,#f8ede2,#f6eee5);border-color:#f0dfcc;color:#9b694c;box-shadow:0 4px 12px #af967e16,inset 0 1px #fff}
+.side .navigation button.active:before{background:#c38a60}
+.side .navigation button.active .icon{stroke-width:2.1}
+.side .sidebar-compact-toggle{background:#f3f0e9;border-color:#e8e0d5;color:#9a8272}
+.side .sidebar-compact-toggle:hover{background:#eee5d9;color:#765c46}
+.side .side-bottom{border-color:#e1e3d8}
+.side .side-bottom p{color:#849083}
+.side .side-bottom a{color:#74644e;border-color:#c0a992}
+.side .side-status{color:#637e69}
+.side .pulse{background:#80b28c}
+.topbar{background:rgba(255,254,251,.83);border-color:#e7e7dd;box-shadow:0 5px 22px #69664b09}
+.topbar-leading .breadcrumbs{color:#717a71}
+.source-indicator{background:#f1f3ea;border-color:#e1e7dc;color:#78907b}
+.mode-control{background:#f2f0e9}
+.mode-control button.active{color:#8e684c;box-shadow:0 3px 13px #85684418}
+.view[data-view="inicio"] .section-intro{
+ background:linear-gradient(120deg,#fffbf6,#f3f0e9 62%,#e8e1d8);
+ border-color:#fbf8f2
+}
+.view[data-view="inicio"] .section-intro:before{color:#cba685}
+.dark .view[data-view="inicio"] .section-intro{background:linear-gradient(120deg,#1c2d25,#21372c,#3c3329)}
+.view[data-view="inicio"] .section-intro h1,.view[data-view="salon"] .section-intro h1,.view[data-view="reservas"] .section-intro h1{color:var(--ink)}
+.primary-btn,.micro-btn.accent{background:linear-gradient(110deg,#aa7653,#956546);color:#fff;box-shadow:0 5px 16px #996a4826}
+.primary-btn:hover:not(:disabled){box-shadow:0 9px 24px #a2734e30;filter:brightness(1.07)}
+.section-intro>.primary-btn{background:linear-gradient(110deg,#b8825c,#a16c49)}
+.metric{background:rgba(255,254,250,.89)}
+.metric:before{background:linear-gradient(90deg,#c6a17e,transparent)}
+.metric strong{color:#4b524a}
+.surface,.room-card,.toolbar,.reservation-card,.order-card,.cash-card,.catalog-card,.native-block{background:rgba(255,254,250,.86);border:1px solid #fff;box-shadow:0 10px 34px #73705712,0 1px 3px #7873640c}
+.floor-viewport{background:#f0f1e9}
+.floor-surface{
+ background:linear-gradient(90deg,#aab6a221 1px,transparent 1px),linear-gradient(#aab6a221 1px,transparent 1px),radial-gradient(circle at 40% 20%,#fafaf5,#edf0e7);
+ background-size:26px 26px,26px 26px,100% 100%
+}
+.floor-table{background:linear-gradient(155deg,#fffcf6,#f4f5ee);border-color:#c8cdbf;color:#3d5742;box-shadow:0 5px 0 #a8b4a04a,0 11px 20px #7c90781b}
+.floor-table.selected{outline-color:#c1916f;box-shadow:0 0 0 7px #c1916f22,0 11px 22px #a1967922}
+.table-inspector{background:rgba(255,254,250,.97)}
+.kitchen-lane{background:#f6f6f0}
+.view .overline{color:#aa7956}
+.toast{box-shadow:0 17px 35px #484b3550}
+.dark .side{background:linear-gradient(170deg,#22372d,#17281f)!important;color:#e7f0e2;border-color:#405447}
+.dark .side .brand-copy strong,.dark .side .side-status{color:#eff4e8}
+.dark .side .brand-copy span,.dark .side .side-caption,.dark .side .nav-separator{color:#b6c8b6}
+.dark .side .navigation button{color:#c8d7c8}
+.dark .side .navigation button:hover{background:#ffffff18;color:#fff}
+.dark .side .navigation button.active{background:linear-gradient(90deg,#e9eee2,#dfe8d8);color:#4b634c;border-color:#fff}
+.dark .side .side-bottom p{color:#afc1b2}
+.dark .side .side-bottom a{color:#e6e9d9}
+.dark .side .sidebar-compact-toggle{background:#ffffff16;color:#dfe8d8;border-color:#fff2}
+.dark .metric strong{color:var(--ink)}
+.dark .floor-viewport{background:#20362d}
+.dark .floor-surface{background:linear-gradient(90deg,#789b761e 1px,transparent 1px),linear-gradient(#789b761e 1px,transparent 1px),#283b31;background-size:26px 26px}
+
+/* The operations home promotes the separate customer-facing portal. */
+.guest-feature{min-height:216px;display:grid;grid-template-columns:minmax(0,1.32fr) minmax(220px,.68fr);gap:0;border-radius:21px;overflow:hidden;border:1px solid #e9dfd4;background:#fff8ef;box-shadow:0 18px 44px #8a715a19;margin:0 0 19px;position:relative;isolation:isolate}
+.guest-feature-copy{padding:28px clamp(21px,3.5vw,52px);position:relative;z-index:2;align-self:center}
+.guest-feature-eyebrow{display:block;font:800 9px 'Manrope',sans-serif;letter-spacing:2.2px;color:#a77959}
+.guest-feature h2{font:600 clamp(31px,3.6vw,51px)/.96 var(--serif);letter-spacing:-.3px;margin:12px 0;color:#565046}
+.guest-feature h2 em{color:#b58363;font-weight:500}
+.guest-feature-copy p{color:#7d766a;max-width:490px;margin:0 0 17px;font-size:12px;line-height:1.6}
+.guest-feature-link{display:inline-flex;align-items:center;gap:19px;font-size:11px;font-weight:800;color:#9b634a;border-bottom:1px solid #bc906c;padding-bottom:6px;transition:gap .25s,color .25s}
+.guest-feature-link:hover{gap:28px;color:#70472c}
+.guest-feature-photo{position:relative;background-image:url('https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=1100&q=80');background-size:cover;background-position:50% 45%;overflow:hidden}
+.guest-feature-photo:before{content:'';position:absolute;inset:0;background:linear-gradient(90deg,#fff8ef 1%,transparent 72%),#493b3022}
+.guest-feature-photo span{position:absolute;right:18%;top:23%;border:1px solid #ffffffe3;border-radius:50%;width:100px;height:100px;display:grid;place-items:center;color:#fff;font-size:55px;background:#a17a5559;backdrop-filter:blur(8px);animation:panaceaHalo 9s ease-in-out infinite}
+@keyframes panaceaHalo{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-14px) rotate(12deg)}}
+
+/* Motion is purposeful: reveal new sections and updated operational cards. */
+.view.active{animation:panaceaPageIn .48s cubic-bezier(.17,.8,.21,1) both}
+@keyframes panaceaPageIn{0%{opacity:0;transform:translateY(15px);filter:blur(3px)}100%{opacity:1;transform:translateY(0);filter:blur(0)}}
+.metric,.reservation-card,.order-card,.cash-card,.catalog-card,.kitchen-ticket,.activity-row,.surface{
+ animation:panaceaCardIn .56s cubic-bezier(.16,.9,.24,1) both;
+ animation-delay:var(--enter-delay,0ms)
+}
+@keyframes panaceaCardIn{0%{opacity:0;transform:translateY(18px) scale(.985)}100%{opacity:1;transform:translateY(0) scale(1)}}
+.floor-table{animation:panaceaTableEnter .46s cubic-bezier(.2,.85,.2,1) both;animation-delay:var(--enter-delay,0ms)}
+@keyframes panaceaTableEnter{0%{opacity:.25;filter:blur(1px)}100%{opacity:1;filter:blur(0)}}
+.kitchen-ticket{transition:border-color .2s,box-shadow .22s,transform .22s}
+.kitchen-ticket:hover{transform:translateY(-4px)}
+.kitchen-lane{transition:background .28s,border-color .28s}
+.status-tabs button,.nav-book,.mode-control button{transition:background .23s,color .23s,box-shadow .23s,transform .23s}
+.status-tabs button.active{animation:panaceaTabPop .32s ease both}
+@keyframes panaceaTabPop{50%{transform:scale(1.055)}}
+.toast:not([hidden]){animation:panaceaToast .32s cubic-bezier(.25,.9,.2,1) both}
+@keyframes panaceaToast{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:none}}
+.modal-overlay:not([hidden]) .modal{animation:panaceaModal .42s cubic-bezier(.19,1,.22,1) both}
+@keyframes panaceaModal{from{opacity:0;transform:translateY(22px) scale(.96)}to{opacity:1;transform:none}}
+.navigation button .icon{transition:transform .24s}
+.navigation button:hover .icon{transform:translateX(2px) scale(1.1)}
+.inventory-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.inventory-actions strong{font-size:12px}
+.integration-footnote{font-size:11px;color:var(--muted);line-height:1.7;margin-top:20px;padding-top:14px;border-top:1px solid var(--line)}
+.audit-header{margin-top:23px;border-top:1px solid var(--line);padding-top:21px}
+.checkbox-field{display:flex!important;gap:10px;align-items:flex-start}
+.checkbox-field input{width:auto!important;margin:3px 0 0!important}
+@media(max-width:1050px){.guest-feature{grid-template-columns:1.2fr .8fr}.guest-feature-photo{background-position:60% 50%}}
+@media(max-width:760px){.guest-feature{grid-template-columns:1fr}.guest-feature-copy{padding:26px 22px}.guest-feature-photo{min-height:145px;background-position:center}.guest-feature-photo:before{background:linear-gradient(180deg,#fff8ef 2%,transparent 95%)}.guest-feature h2{font-size:42px}.inventory-actions{gap:6px}.activity-row{gap:7px}}
+@media(prefers-reduced-motion:reduce){.view.active,.metric,.reservation-card,.order-card,.cash-card,.catalog-card,.kitchen-ticket,.activity-row,.surface,.floor-table,.status-tabs button.active,.toast:not([hidden]),.modal-overlay:not([hidden]) .modal,.guest-feature-photo span{animation:none!important;transition:none!important}}
