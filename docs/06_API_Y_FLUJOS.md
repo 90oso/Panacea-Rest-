@@ -1,5 +1,9 @@
 # 06 — Contratos HTTP, estados y flujos
 
+> [!IMPORTANT]
+> **Documento de referencia del MVP heredado.** La dirección aprobada para el siguiente desarrollo es **Panacea Core independiente**, sin TastyIgniter en runtime. No implementar nuevas integraciones nativas como destino final. Priorizar [ADR-001](architecture/ADR_001_CORE_INDEPENDIENTE.md) y el [plan standalone](architecture/PLAN_MIGRACION_CORE.md).
+
+
 **Alcance:** solo entornos con `APP_ENV=local`. Son **rutas de desarrollo**, no una API pública versionada lista para producción. Los métodos POST de Laravel esperan token CSRF y credenciales de origen cuando corresponde.
 
 ## Mapa de rutas
