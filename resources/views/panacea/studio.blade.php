@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="{{ asset('panacea/studio.css') }}?v=3">
+  <link rel="stylesheet" href="{{ asset('panacea/studio.css') }}?v=4">
   <script>
     window.PANACEA_STUDIO = {
       stateUrl: @json($apiState),
@@ -18,47 +18,83 @@
       csrf: @json(csrf_token())
     };
   </script>
-  <script defer src="{{ asset('panacea/studio.js') }}?v=3"></script>
+  <link rel="stylesheet" href="{{ asset('panacea/studio-premium.css') }}?v=4">
+  <script defer src="{{ asset('panacea/studio.js') }}?v=4"></script>
+  <script defer src="{{ asset('panacea/studio-shell.js') }}?v=4"></script>
 </head>
 <body>
-<div class="app-shell">
-  <aside class="side">
-    <div class="identity"><div class="brand-symbol">✳</div><div><strong>panacea</strong><span>RESTAURANT · STUDIO</span></div></div>
+<a class="skip-link" href="#mainContent">Saltar al contenido</a>
+<svg xmlns="http://www.w3.org/2000/svg" class="svg-sprite" aria-hidden="true" focusable="false">
+<symbol id="ic-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+<symbol id="ic-panel" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/></symbol>
+<symbol id="ic-collapse" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 9l-3 3 3 3"/></symbol>
+<symbol id="ic-expand" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18m4-6 3-3-3-3"/></symbol>
+<symbol id="ic-home" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></symbol>
+<symbol id="ic-calendar" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18M8 15h.01M12 15h.01M16 15h.01"/></symbol>
+<symbol id="ic-table" viewBox="0 0 24 24"><path d="M3 6h18v5H3zM5 11v9m14-9v9M8 15h8"/></symbol>
+<symbol id="ic-orders" viewBox="0 0 24 24"><path d="M8 4h11a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2h1ZM9 3h6v3H9zM9 11h8M9 15h8M9 19h5"/></symbol>
+<symbol id="ic-chef" viewBox="0 0 24 24"><path d="M6 14a4 4 0 0 1-1-7.9 5 5 0 0 1 9-2 4.5 4.5 0 0 1 6 6.8A4 4 0 0 1 18 14H6ZM7 14v7h10v-7M7 18h10"/></symbol>
+<symbol id="ic-wallet" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M16 13h5v5h-5a2.5 2.5 0 0 1 0-5ZM6 5V3h12"/></symbol>
+<symbol id="ic-book" viewBox="0 0 24 24"><path d="M12 6a9 9 0 0 0-9-2v15a9 9 0 0 1 9 2 9 9 0 0 1 9-2V4a9 9 0 0 0-9 2v15M7 9h2M15 9h2"/></symbol>
+<symbol id="ic-box" viewBox="0 0 24 24"><path d="m3 7 9-4 9 4v10l-9 4-9-4V7ZM3 7l9 4 9-4M12 11v10M7 5l9 4"/></symbol>
+<symbol id="ic-users" viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M3 20v-2a6 6 0 0 1 12 0v2H3ZM17 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5v1"/></symbol>
+<symbol id="ic-staff" viewBox="0 0 24 24"><circle cx="10" cy="7" r="3"/><path d="M4 20v-2a6 6 0 0 1 9.5-4.8M16 18l2 2 4-5"/></symbol>
+<symbol id="ic-alert" viewBox="0 0 24 24"><path d="m12 3 9 16H3L12 3ZM12 9v4M12 17h.01"/></symbol>
+<symbol id="ic-sliders" viewBox="0 0 24 24"><path d="M4 7h6m4 0h6M4 17h9m4 0h3M10 4v6M17 14v6"/></symbol>
+<symbol id="ic-chart" viewBox="0 0 24 24"><path d="M3 20V4m0 16h18M7 16v-4M12 16V7M17 16v-8M7 9l5-5 5 2 3-3"/></symbol>
+<symbol id="ic-refresh" viewBox="0 0 24 24"><path d="M20 7v5h-5M4 17v-5h5M5 10a8 8 0 0 1 14-3l1 5M4 12a8 8 0 0 0 15 2"/></symbol>
+<symbol id="ic-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></symbol>
+<symbol id="ic-moon" viewBox="0 0 24 24"><path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5 8.5 8.5 0 1 0 20.5 14.5Z"/></symbol>
+<symbol id="ic-sparkles" viewBox="0 0 24 24"><path d="m12 3 1.7 6.3L20 11l-6.3 1.7L12 19l-1.7-6.3L4 11l6.3-1.7L12 3ZM19 18l.7 2.3L22 21l-2.3.7L19 24l-.7-2.3L16 21l2.3-.7L19 18Z"/></symbol>
+<symbol id="ic-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16"/></symbol>
+<symbol id="ic-arrow" viewBox="0 0 24 24"><path d="M7 17 17 7M7 7h10v10"/></symbol>
+<symbol id="ic-check" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></symbol>
+<symbol id="ic-layers" viewBox="0 0 24 24"><path d="m12 2 9 5-9 5-9-5 9-5ZM3 12l9 5 9-5M3 17l9 5 9-5"/></symbol>
+<symbol id="ic-bell" viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9ZM10 21h4"/></symbol>
+<symbol id="ic-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18M10.6 5.2A10 10 0 0 1 12 5c5 0 9 7 9 7a16 16 0 0 1-3 3.5M6.4 6.4A16 16 0 0 0 3 12s4 7 9 7a9.5 9.5 0 0 0 4.1-.9M10 10a3 3 0 0 0 4 4"/></symbol>
+</svg>
+<div class="app-shell" id="appShell">
+  <aside class="side" id="sidebar" aria-label="Navegación principal">
+<div class="side-top"><div class="identity"><div class="brand-symbol" aria-hidden="true">✳</div><div class="brand-copy"><strong>panacea</strong><span>RESTAURANT · STUDIO</span></div></div><button type="button" class="sidebar-compact-toggle" id="sidebarCompactToggle" aria-label="Contraer barra lateral" title="Contraer barra lateral"><svg class="icon" aria-hidden="true"><use href="#ic-collapse"></use></svg></button></div>
     <div class="side-caption">ESPACIO DE TRABAJO</div>
-    <nav class="navigation" aria-label="Secciones de Panacea">
-      <button type="button" data-nav="inicio" class="active"><span class="nav-symbol">◈</span>Resumen</button>
-      <button type="button" data-nav="reservas"><span class="nav-symbol">▦</span>Reservas</button>
-      <button type="button" data-nav="salon"><span class="nav-symbol">▤</span>Salón y mesas</button>
-      <button type="button" data-nav="pedidos"><span class="nav-symbol">≡</span>Pedidos</button>
-      <button type="button" data-nav="cocina"><span class="nav-symbol">◫</span>Cocina</button>
-      <button type="button" data-nav="caja"><span class="nav-symbol">▣</span>Caja y cobros</button>
-      <button type="button" data-nav="menu"><span class="nav-symbol">◩</span>Catálogo</button>
-      <div class="nav-separator">GESTIÓN</div>
-      <button type="button" data-nav="inventario"><span class="nav-symbol">◧</span>Inventario</button>
-      <button type="button" data-nav="clientes"><span class="nav-symbol">♙</span>Clientes</button>
-      <button type="button" data-nav="personal"><span class="nav-symbol">♧</span>Personal</button>
-      <button type="button" data-nav="incidencias"><span class="nav-symbol">⚑</span>Incidencias</button>
-      <button type="button" data-nav="simulador"><span class="nav-symbol">◇</span>Simulador</button>
-      <button type="button" data-nav="gerencia"><span class="nav-symbol">▥</span>Gerencia</button>
+    <nav class="navigation" id="sidebarNav" aria-label="Secciones de Panacea">
+      <button type="button" data-nav="inicio" class="active" title="Resumen" aria-label="Resumen" aria-current="page"><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-home"></use></svg></span><span class="nav-text">Resumen</span></button>
+      <button type="button" data-nav="reservas" title="Reservas" aria-label="Reservas" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-calendar"></use></svg></span><span class="nav-text">Reservas</span></button>
+      <button type="button" data-nav="salon" title="Salón y mesas" aria-label="Salón y mesas" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-table"></use></svg></span><span class="nav-text">Salón y mesas</span></button>
+      <button type="button" data-nav="pedidos" title="Pedidos" aria-label="Pedidos" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-orders"></use></svg></span><span class="nav-text">Pedidos</span></button>
+      <button type="button" data-nav="cocina" title="Cocina" aria-label="Cocina" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-chef"></use></svg></span><span class="nav-text">Cocina</span></button>
+      <button type="button" data-nav="caja" title="Caja y cobros" aria-label="Caja y cobros" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-wallet"></use></svg></span><span class="nav-text">Caja y cobros</span></button>
+      <button type="button" data-nav="menu" title="Catálogo" aria-label="Catálogo" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-book"></use></svg></span><span class="nav-text">Catálogo</span></button>
+      <div class="nav-separator" data-section-label="GESTIÓN">GESTIÓN</div>
+      <button type="button" data-nav="inventario" title="Inventario" aria-label="Inventario" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-box"></use></svg></span><span class="nav-text">Inventario</span></button>
+      <button type="button" data-nav="clientes" title="Clientes" aria-label="Clientes" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-users"></use></svg></span><span class="nav-text">Clientes</span></button>
+      <button type="button" data-nav="personal" title="Personal" aria-label="Personal" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-staff"></use></svg></span><span class="nav-text">Personal</span></button>
+      <button type="button" data-nav="incidencias" title="Incidencias" aria-label="Incidencias" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-alert"></use></svg></span><span class="nav-text">Incidencias</span></button>
+      <button type="button" data-nav="simulador" title="Simulador" aria-label="Simulador" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-sliders"></use></svg></span><span class="nav-text">Simulador</span></button>
+      <button type="button" data-nav="gerencia" title="Gerencia" aria-label="Gerencia" ><span class="nav-symbol"><svg class="icon" aria-hidden="true"><use href="#ic-chart"></use></svg></span><span class="nav-text">Gerencia</span></button>
     </nav>
-    <div class="side-bottom"><div class="side-status"><span class="pulse"></span><span>Entorno local de desarrollo</span></div><p>El modo real utiliza MariaDB. Los cobros se registran manualmente y no son transacciones bancarias ni comprobantes fiscales.</p><a href="/panacea-operations">Administración TastyIgniter <span>↗</span></a></div>
+        <div class="side-bottom"><div class="side-status"><span class="pulse"></span><span>Entorno local de desarrollo</span></div><p>El modo real utiliza MariaDB. Los cobros se registran manualmente y no son transacciones bancarias ni comprobantes fiscales.</p><a href="/panacea-operations">Administración TastyIgniter <span>↗</span></a></div>
   </aside>
+  <button type="button" id="sidebarScrim" class="sidebar-scrim" aria-label="Cerrar navegación" tabindex="-1" hidden></button>
 
   <div class="main-column">
     <header class="topbar">
-      <div class="breadcrumbs"><span>PANACEA</span><span class="slash">/</span><span>RESTAURANT</span><span class="slash">/</span><strong id="breadcrumb">RESUMEN</strong></div>
+      <div class="topbar-leading">
+        <button type="button" class="icon-button menu-toggle" id="sidebarToggle" aria-controls="sidebar" aria-expanded="true" aria-label="Ocultar barra lateral" title="Ocultar o mostrar menú"><svg class="icon" aria-hidden="true"><use href="#ic-menu"></use></svg></button>
+        <div class="breadcrumbs"><span>PANACEA</span><span class="slash">/</span><span>RESTAURANT</span><span class="slash">/</span><strong id="breadcrumb">RESUMEN</strong></div>
+      </div>
       <div class="topbar-actions">
         <span class="source-indicator" id="sourceIndicator">● Conectando</span>
         <div class="mode-control" role="group" aria-label="Fuente de datos">
           <button type="button" id="realMode" class="active" aria-pressed="true">Datos reales</button>
           <button type="button" id="demoMode" aria-pressed="false">Demostración</button>
         </div>
-        <button type="button" class="icon-button" id="reload" title="Actualizar desde la base de datos" aria-label="Actualizar datos">↻</button>
-        <button type="button" class="icon-button" id="themeSwitch" title="Cambiar apariencia" aria-label="Cambiar apariencia">◐</button>
+        <button type="button" class="icon-button" id="reload" title="Actualizar desde la base de datos" aria-label="Actualizar datos"><svg class="icon" aria-hidden="true"><use href="#ic-refresh"></use></svg></button>
+        <button type="button" class="icon-button" id="themeSwitch" title="Cambiar apariencia" aria-label="Cambiar apariencia" aria-pressed="false"><svg class="icon" aria-hidden="true"><use href="#ic-moon"></use></svg></button>
       </div>
     </header>
 
-    <main class="work-area">
+    <main class="work-area" id="mainContent">
       <div id="toast" role="status" aria-live="polite" class="toast" hidden></div>
       <div id="banner" class="banner" hidden></div>
 
