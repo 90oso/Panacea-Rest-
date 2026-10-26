@@ -10,11 +10,33 @@
   function renderMenu(){
     const term=$('guestMenuSearch').value.toLocaleLowerCase('es').trim();
     const matched=items.filter(i=>String(i.name).toLocaleLowerCase('es').includes(term));
-    $('guestMenuCards').innerHTML=matched.length?matched.map((item,index)=>
-      '<article class="menu-card"><div class="menu-card-top"><span>SELECCIÓN '+String(index+1).padStart(2,'0')+'</span><i aria-hidden="true">✳</i></div>'+
-      '<h3>'+escapeHtml(item.name)+'</h3><div class="menu-card-bottom"><strong>'+money(item.price)+'</strong><span>PRECIO DEL CATÁLOGO</span></div></article>'
-    ).join(''):'<div class="empty-menu"><strong>'+ (items.length?'Sin coincidencias':'La carta se está preparando')+'</strong>'+
-      '<p>'+ (items.length?'Prueba con otro término.':'Aún no hay productos con precio publicados en el catálogo local de TastyIgniter.')+'</p></div>';
+    const count=$('guestMenuCount');
+    if(count) count.textContent=matched.length+' '+(matched.length===1?'producto':'productos')+' en nuestra carta';
+    const visuals=window.PanaceaMenuVisuals;
+    const fallback='https://images.unsplash.com/photo-1547592180-85f173990554?auto=format&fit=crop&w=920&h=660&q=82';
+    $('guestMenuCards').innerHTML=matched.length?matched.map((item,index)=>{
+      const visual=visuals?.resolve(item)||{
+        src:fallback, fallback, native:false,
+        badge:'IMAGEN ILUSTRATIVA',alt:'Fotografía gastronómica ilustrativa'
+      };
+      const first=index===0&&matched.length>=4;
+      const summary=String(item.description||'').trim();
+      return '<article class="menu-card'+(first?' menu-card-featured':'')+'" style="--menu-index:'+Math.min(index,9)+'">'+
+        '<div class="menu-card-media">'+
+          '<img data-menu-photo data-menu-fallback="'+escapeHtml(visual.fallback)+'" src="'+escapeHtml(visual.src)+'" alt="'+escapeHtml(visual.alt)+'" loading="lazy" decoding="async" sizes="(max-width:600px) 100vw, (max-width:980px) 50vw, 33vw">'+
+          '<span class="menu-photo-badge" data-photo-badge>'+escapeHtml(visual.badge)+'</span>'+
+          '<span class="menu-photo-ornament" aria-hidden="true">✳</span>'+
+          '<span class="menu-photo-number" aria-hidden="true">'+String(index+1).padStart(2,'0')+'</span>'+
+        '</div>'+
+        '<div class="menu-card-content">'+
+          '<div class="menu-card-top"><span>SELECCIÓN DE LA CASA</span><i aria-hidden="true">✳</i></div>'+
+          '<h3>'+escapeHtml(item.name)+'</h3>'+
+          (summary?'<p class="menu-card-description">'+escapeHtml(summary)+'</p>':'')+
+          '<div class="menu-card-bottom"><strong>'+money(item.price)+'</strong><span>PRECIO DEL CATÁLOGO <span aria-hidden="true">↗</span></span></div>'+
+        '</div></article>';
+    }).join(''):
+      '<div class="empty-menu"><strong>'+(items.length?'Sin coincidencias':'La carta se está preparando')+'</strong>'+
+      '<p>'+(items.length?'Prueba con otro término.':'Aún no hay productos con precio publicados en el catálogo local de TastyIgniter.')+'</p></div>';
   }
 
   function stamp(input){
