@@ -106,7 +106,7 @@ path,origen,decision,prioridad,criterio
 "public/panacea/studio-tour.css","ARCHIVO_PANACEA_O_PROYECTO","CONSERVAR_ADAPTAR","P1","CSS propio Panacea; limpiar capas duplicadas y probar contraste/recursos terceros."
 "public/panacea/studio-tour.js","ARCHIVO_PANACEA_O_PROYECTO","ADAPTAR","P1","Conservar experiencia; actualizar contratos, privacidad, links y marca."
 "public/panacea/studio.css","ARCHIVO_PANACEA_O_PROYECTO","CONSERVAR_ADAPTAR","P1","CSS propio Panacea; limpiar capas duplicadas y probar contraste/recursos terceros."
-"public/panacea/studio.js","RUTA_PANACEA_NO_EN_UPSTREAM_VERIFICADA","REFRACTORIZAR","P0","Dividir 75 KB de lógica mezclada; adaptar IDs y payloads a API Core."
+"public/panacea/studio.js","RUTA_PANACEA_NO_EN_UPSTREAM_VERIFICADA","REFACTORIZAR","P0","Dividir 75 KB de lógica mezclada; adaptar IDs y payloads a API Core."
 "public/robots.txt","COINCIDENCIA_UPSTREAM_4X_VERIFICADA","REGENERAR","P1","Revisar comportamiento Apache y robots propios."
 "README.md","ARCHIVO_PANACEA_O_PROYECTO","ADAPTAR","P1","Reescribir contexto standalone y documentación de la nueva arquitectura."
 "resources/css/app.css","BASE_HEREDADA_COMPARACION_PENDIENTE","DESCARTAR","P1","Archivos vacíos heredados; usar la estructura frontend nueva si procede."
