@@ -56,6 +56,42 @@ Route::get('/panacea-preview', function () {
         report($e);
         $room['error'] = 'No se pudo cargar el plano real. Revisa los registros del servidor.';
     }
+    // Read-only operational links. Never infer a free/occupied state from missing rows.
+    $room['reservation_links'] = [];
+    $room['order_links'] = [];
+    try {
+        if (Schema::hasTable('reservation_tables') && Schema::hasTable('reservations')) {
+            $linkColumns = Schema::getColumnListing('reservation_tables');
+            $reservationColumns = Schema::getColumnListing('reservations');
+            if (in_array('reservation_id', $linkColumns, true) && in_array('dining_table_id', $linkColumns, true)
+                && in_array('reservation_id', $reservationColumns, true)) {
+                $fields = array_values(array_intersect(['reservation_id','reserve_date','reserve_time','status_id'], $reservationColumns));
+                $reservations = DB::table('reservations')->select($fields)->limit(250)->get()->keyBy('reservation_id');
+                $links = DB::table('reservation_tables')->select(['reservation_id','dining_table_id'])->limit(500)->get();
+                foreach ($links as $link) {
+                    $reservation = $reservations->get($link->reservation_id);
+                    if (!$reservation) continue;
+                    $room['reservation_links'][] = [
+                        'table_id' => (int) $link->dining_table_id,
+                        'reservation_id' => (int) $link->reservation_id,
+                        'date' => $reservation->reserve_date ?? null,
+                        'time' => $reservation->reserve_time ?? null,
+                        'status_id' => $reservation->status_id ?? null,
+                    ];
+                }
+            }
+        }
+        if (Schema::hasTable('orders')) {
+            $orderColumns = Schema::getColumnListing('orders');
+            if (in_array('table_id', $orderColumns, true)) {
+                $fields = array_values(array_intersect(['order_id','table_id','status_id','order_total','created_at'], $orderColumns));
+                $room['order_links'] = DB::table('orders')->select($fields)->whereNotNull('table_id')->orderByDesc('order_id')->limit(100)->get();
+            }
+        }
+    } catch (\Throwable $e) {
+        report($e);
+        $room['operations_error'] = 'No se pudieron cargar todas las asociaciones operativas.';
+    }
     return view('panacea.preview', ['panaceaData' => $data, 'panaceaRoom' => $room]);
 })->name('panacea.preview');
 
