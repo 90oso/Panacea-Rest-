@@ -1,5 +1,9 @@
 # 05 — Modelo de datos y persistencia
 
+> [!IMPORTANT]
+> **Documento de referencia del MVP heredado.** La dirección aprobada para el siguiente desarrollo es **Panacea Core independiente**, sin TastyIgniter en runtime. No implementar nuevas integraciones nativas como destino final. Priorizar [ADR-001](architecture/ADR_001_CORE_INDEPENDIENTE.md) y el [plan standalone](architecture/PLAN_MIGRACION_CORE.md).
+
+
 **Fuente:** migraciones `database/migrations/2026_10_25_*`, `StudioController`, `GuestPortalController` y `Operations`.  
 **Motor local:** MariaDB 11.4. **El inventario y las transacciones Panacea no son el libro oficial de TastyIgniter.**
 
