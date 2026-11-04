@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feat/panacea-restaurant-mvp
+      - feat/panacea-public-demo-vercel
   pull_request:
     paths:
       - 'app/Http/Controllers/Panacea/**'
