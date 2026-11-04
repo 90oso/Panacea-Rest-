@@ -45,7 +45,9 @@ El `vercel.json` bloquea conexiones JS externas con `connect-src 'none'`, formul
 
 ### Vercel
 
-Importar solo `demo-public` como Root Directory. Seleccionar Framework **Other** (sin build command). El directorio está preparado para entregar `index.html` y `studio/index.html` directamente.
+Importar el repositorio **`90oso/Panacea-Rest-`** en Vercel con una configuración de proyecto **aislada**, nunca la carpeta raíz del Laravel heredado. Es imprescindible elegir como **Production Branch** `feat/panacea-public-demo-vercel` (la rama por defecto del repositorio original es `4.x`) y como **Root Directory** `demo-public`. Seleccionar Framework **Other**, sin build ni install command, y publicar esa rama. Verificar que la carpeta raíz se establezca antes del despliegue: los únicos archivos que deben servir al navegador son los de `demo-public`.
+
+Pasos de importación: Vercel Dashboard → Add New → Project → Import Git Repository `90oso/Panacea-Rest-` → Root Directory `demo-public` → Framework Preset `Other` → configurar producción desde `feat/panacea-public-demo-vercel` → Deploy. Si Vercel solo permite cambiar **Production Branch** después de crear el proyecto, **no publiques primero la rama por defecto**: configura la rama correcta y dispara un despliegue nuevo antes de compartir la URL. El directorio está preparado para entregar `index.html` y `studio/index.html` directamente.
 
 En el flujo de despliegue por archivos, Vercel recibe únicamente los archivos de esta carpeta: **no** se incluyen los controladores PHP, `composer.json`, la base de datos ni credenciales del proyecto legado.
 
@@ -72,3 +74,7 @@ Este script se encuentra en la raíz del repositorio y valida los recursos, ause
 Los diseños y scripts incluidos se extraen de las vistas/archivos Panacea de la rama `feat/panacea-restaurant-mvp`, adaptados a funcionar sin runtime. No distribuye el core TastyIgniter. El desarrollo futuro de Panacea Core independiente está documentado en `docs/architecture/` del repositorio de origen.
 
 Cualquier uso futuro de componentes o assets de terceros debe revisar su licencia y procedencia; las imágenes ilustrativas se cargan remotamente.
+
+## Estado de publicación
+
+Los archivos y las pruebas están publicados en GitHub, pero el primer intento de creación directa del proyecto Vercel devolvió **403 Forbidden** (la integración conectada no tiene permiso para crear el proyecto). Una URL pública **solo** debe comunicarse una vez que Vercel muestre el despliegue como READY y ambas rutas hayan sido abiertas y verificadas. No confundir una rama lista con un sitio ya publicado.
