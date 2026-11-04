@@ -16,7 +16,7 @@
     {
       id:'source',view:'inicio',anchor:'.mode-control',chapter:'PREPARACIÓN',quick:true,
       title:'Una plataforma, dos modos.',
-      copy:'Demostración presenta un restaurante ficticio y permite explorar sin escribir en MariaDB. Datos reales muestra lo registrado localmente. La guía utiliza la demostración para que puedas grabar con ejemplos.'
+      copy:'Estás explorando una versión pública con datos ficticios. No existe modo de datos reales, no hay servidor de operaciones y todos los cambios desaparecen al recargar la página.'
     },
     {
       id:'overview',view:'inicio',anchor:'#dashboardMetrics .metric:first-child',chapter:'CENTRO DE OPERACIONES',quick:true,
@@ -37,7 +37,7 @@
     {
       id:'reservations',view:'reservas',anchor:'.view[data-view="reservas"] .section-intro',chapter:'RECEPCIÓN',quick:true,
       title:'Primero, organizamos las reservas.',
-      copy:'Recepción puede consultar la agenda, crear reservas y confirmar solicitudes. Se revisan capacidades y conflictos de horario; la integración con reservas nativas sigue separada.'
+      copy:'Recepción puede consultar la agenda, crear reservas y confirmar solicitudes. Se revisan capacidades y conflictos de horario; toda la agenda se simula en el navegador.'
     },
     {
       id:'reservation-cards',view:'reservas',anchor:'#reservationGrid .reservation-card:first-child',chapter:'RECEPCIÓN',quick:false,
@@ -77,12 +77,12 @@
     {
       id:'menu',view:'menu',anchor:'#catalogGrid .catalog-card:first-child',chapter:'CATÁLOGO',quick:false,
       title:'La carta también forma parte de la experiencia.',
-      copy:'Los productos, precios y fotografías provienen del catálogo nativo cuando existen. Las fotografías de apoyo están etiquetadas como ilustrativas.'
+      copy:'Los productos y precios son completamente ficticios. Las imágenes se muestran como ilustraciones visuales de la experiencia, no como platos vendidos.'
     },
     {
       id:'inventory',view:'inventario',anchor:'#inventoryMetrics .metric:first-child',chapter:'INVENTARIO',quick:true,
       title:'De la receta a la existencia.',
-      copy:'Panacea registra ingredientes, stock mínimo y costos. Las comandas pueden descontar su propia existencia; el inventario nativo de TastyIgniter sigue siendo independiente.'
+      copy:'Panacea registra ingredientes, stock mínimo y costos. Las comandas pueden descontar su propia existencia; no hay inventario real conectado.'
     },
     {
       id:'recipes',view:'inventario',anchor:'#inventoryNotes',chapter:'INVENTARIO',quick:false,
@@ -97,7 +97,7 @@
     {
       id:'staff',view:'personal',anchor:'.view[data-view="personal"] .section-intro',chapter:'EQUIPO',quick:false,
       title:'El personal, en contexto.',
-      copy:'Consulta un directorio con puestos y turnos. Estos roles son informativos: no reemplazan los permisos de usuario gestionados por TastyIgniter.'
+      copy:'Consulta un directorio con puestos y turnos. Estos roles son informativos: no reemplazan los permisos de usuario gestionados por Panacea.'
     },
     {
       id:'incidents',view:'incidencias',anchor:'#incidentList .reservation-card:first-child',chapter:'CALIDAD',quick:false,
@@ -332,7 +332,7 @@
     setText(elements.chapter,'BIENVENIDA · MODO PRESENTACIÓN');
     setText(elements.counter,'ELIGE TU AVENTURA');
     setText(elements.title,'Tu restaurante, explicado paso a paso.');
-    statusMessage('Recorre Panacea como un tutorial de videojuego: cada pantalla se presenta con un foco visual. La guía activa los datos de demostración y no ejecuta acciones operativas.');
+    statusMessage('Recorre Panacea como un tutorial de videojuego: cada pantalla se presenta con un foco visual. La guía utiliza únicamente datos de demostración; no ejecuta acciones sobre servidores.');
     animateCopy();
     setHidden(elements.chooser,false);
     setHidden(elements.progressWrap,true);
@@ -355,7 +355,7 @@
     }
 
     // Switching to Demo is an explicit opt-in from the welcome screen. This
-    // changes only the browser's active source, never MariaDB.
+    // changes only the browser's active source, never ninguna base de datos.
     bridge().useDemo();
     state.mode=kind==='full'?'full':'quick';
     state.steps=CATALOG.filter(step=>state.mode==='full'||step.quick);
