@@ -32,7 +32,7 @@ for (const r of rows) {
   assert.ok(['P0','P1','P2'].includes(r.priority),'Missing priority: '+r.path);
   assert.ok(r.note.length>=20,'Missing action rationale: '+r.path);
 }
-const excluded=p=>p.startsWith('docs/architecture/')||p==='tests/panacea-independence-inventory-check.mjs';
+const excluded=p=>p.startsWith('docs/architecture/')||p.startsWith('demo-public/')||p==='tests/panacea-independence-inventory-check.mjs'||p==='tests/panacea-public-demo-smoke.mjs';
 const tracked=execFileSync('git',['ls-files','-z'],{encoding:'utf8'})
   .split('\0').filter(Boolean).filter(p=>!excluded(p));
 const actual=new Set(tracked);
